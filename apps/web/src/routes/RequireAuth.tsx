@@ -1,3 +1,4 @@
+import { Loader2 } from "lucide-react"
 import { Navigate, Outlet } from "react-router-dom"
 import { useSession } from "@/lib/auth-client"
 
@@ -6,8 +7,8 @@ export function RequireAuth() {
 
   if (isPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading...</p>
+      <div className="flex min-h-svh items-center justify-center">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     )
   }

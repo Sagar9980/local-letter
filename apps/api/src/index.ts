@@ -47,6 +47,20 @@ app.get("/projects", requireSession, async (req, res) => {
   res.json({ projects });
 });
 
+app.get("/projects/:slug", requireSession, async (req, res) => {
+  const slug = String(req.params.slug);
+  const project = await prisma.project.findFirst({
+    where: { slug, ownerId: req.user!.id },
+  });
+
+  if (!project) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  res.json({ project });
+});
+
 app.post("/projects", requireSession, async (req, res) => {
   const { name, slug: rawSlug } = req.body ?? {};
 
