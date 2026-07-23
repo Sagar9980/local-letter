@@ -89,6 +89,155 @@ app.post("/projects", requireSession, async (req, res) => {
   }
 });
 
+async function getOwnedProject(slug: string, ownerId: string) {
+  return prisma.project.findFirst({ where: { slug, ownerId } });
+}
+
+app.get("/projects/:slug/templates", requireSession, async (req, res) => {
+  const project = await getOwnedProject(String(req.params.slug), req.user!.id);
+  if (!project) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  const q = typeof req.query.q === "string" ? req.query.q : undefined;
+  const status = typeof req.query.status === "string" ? req.query.status : undefined;
+
+  const templates = await prisma.template.findMany({
+    where: {
+      projectId: project.id,
+      ...(q ? { name: { contains: q, mode: "insensitive" } } : {}),
+    },
+    include: { locales: true },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  const results = templates
+    .map((template) => {
+      const defaultLocale = template.locales.find((l) => l.locale === template.defaultLocale);
+      return {
+        id: template.id,
+        key: template.key,
+        name: template.name,
+        defaultLocale: template.defaultLocale,
+        status: defaultLocale?.status ?? "draft",
+        subject: defaultLocale?.subject ?? "",
+        updatedAt: template.updatedAt,
+        createdAt: template.createdAt,
+      };
+    })
+    .filter((template) => !status || template.status === status);
+
+  res.json({ templates: results });
+});
+
+app.post("/projects/:slug/templates", requireSession, async (req, res) => {
+  const project = await getOwnedProject(String(req.params.slug), req.user!.id);
+  if (!project) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  const { name, key: rawKey } = req.body ?? {};
+
+  if (typeof name !== "string" || name.trim().length === 0) {
+    res.status(400).json({ error: "name is required" });
+    return;
+  }
+
+  const key = typeof rawKey === "string" && rawKey.length > 0 ? rawKey : slugify(name);
+  if (!/^[a-z0-9-]+$/.test(key)) {
+    res.status(400).json({ error: "key must match ^[a-z0-9-]+$" });
+    return;
+  }
+
+  try {
+    const template = await prisma.template.create({
+      data: {
+        projectId: project.id,
+        name: name.trim(),
+        key,
+        defaultLocale: "en",
+        locales: {
+          create: {
+            locale: "en",
+            subject: "",
+            htmlBody: "",
+            status: "draft",
+          },
+        },
+      },
+      include: { locales: true },
+    });
+    res.status(201).json({ template });
+  } catch (err) {
+    if (err instanceof Error && "code" in err && err.code === "P2002") {
+      res.status(409).json({ error: "key already in use" });
+      return;
+    }
+    throw err;
+  }
+});
+
+app.get("/projects/:slug/templates/:key", requireSession, async (req, res) => {
+  const project = await getOwnedProject(String(req.params.slug), req.user!.id);
+  if (!project) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  const template = await prisma.template.findFirst({
+    where: { projectId: project.id, key: String(req.params.key) },
+    include: { locales: true },
+  });
+
+  if (!template) {
+    res.status(404).json({ error: "Template not found" });
+    return;
+  }
+
+  res.json({ template });
+});
+
+app.put("/projects/:slug/templates/:key", requireSession, async (req, res) => {
+  const project = await getOwnedProject(String(req.params.slug), req.user!.id);
+  if (!project) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  const template = await prisma.template.findFirst({
+    where: { projectId: project.id, key: String(req.params.key) },
+  });
+
+  if (!template) {
+    res.status(404).json({ error: "Template not found" });
+    return;
+  }
+
+  const { subject, htmlBody, designJson } = req.body ?? {};
+
+  if (typeof subject !== "string" || typeof htmlBody !== "string") {
+    res.status(400).json({ error: "subject and htmlBody are required strings" });
+    return;
+  }
+
+  const locale = await prisma.templateLocale.upsert({
+    where: { templateId_locale: { templateId: template.id, locale: template.defaultLocale } },
+    update: { subject, htmlBody, designJson },
+    create: {
+      templateId: template.id,
+      locale: template.defaultLocale,
+      subject,
+      htmlBody,
+      designJson,
+      status: "draft",
+    },
+  });
+
+  res.json({ locale });
+});
+
 app.listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
 });

@@ -1,0 +1,109 @@
+/*
+ * Re-theme GrapesJS's default dark chrome to match the app's light shadcn theme.
+ * GrapesJS's skin exposes four utility classes for exactly this purpose:
+ * one-bg (panel bg), two-color (muted text/icons), three-bg (hover/selected bg),
+ * four-color (active/accent color). Overriding those covers most of the UI.
+ */
+
+.gjs-one-bg {
+  background-color: var(--background) !important;
+}
+
+.gjs-two-color {
+  color: var(--muted-foreground) !important;
+}
+
+.gjs-three-bg {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+.gjs-four-color,
+.gjs-four-color-h:hover {
+  color: var(--primary) !important;
+}
+
+.gjs-editor {
+  font-family: var(--font-sans);
+}
+
+.gjs-pn-panel {
+  border-color: var(--border) !important;
+}
+
+.gjs-pn-views-container {
+  border-left: 1px solid var(--border) !important;
+}
+
+.gjs-pn-commands,
+.gjs-pn-options {
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.gjs-pn-btn {
+  color: var(--muted-foreground);
+  border-radius: var(--radius-sm);
+}
+
+.gjs-pn-btn.gjs-pn-active {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.gjs-cv-canvas {
+  background-color: var(--muted);
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.gjs-block {
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  transition: border-color 0.15s ease;
+}
+
+.gjs-block:hover {
+  border-color: var(--primary);
+}
+
+.gjs-block-label {
+  color: var(--foreground);
+  font-size: 11px;
+}
+
+.gjs-layer {
+  border-color: var(--border) !important;
+}
+
+.gjs-sm-sector .gjs-sm-title,
+.gjs-layer-title {
+  color: var(--foreground) !important;
+}
+
+.gjs-field {
+  background-color: var(--background);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-sm);
+  color: var(--foreground);
+}
+
+.gjs-select select {
+  color: var(--foreground);
+}
+
+.gjs-am-file-uploader,
+.gjs-mdl-dialog {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.gjs-mdl-header {
+  border-bottom: 1px solid var(--border);
+}
+
+.gjs-mdl-title {
+  color: var(--foreground);
+}
