@@ -17,9 +17,9 @@ export function ProjectLayout() {
     setProject(null)
     setNotFound(false)
 
-    apiFetch<{ project: Project }>(`/projects/${slug}`)
+    apiFetch<Project>(`/projects/${slug}`)
       .then((data) => {
-        if (!cancelled) setProject(data.project)
+        if (!cancelled) setProject(data)
       })
       .catch(() => {
         if (!cancelled) setNotFound(true)

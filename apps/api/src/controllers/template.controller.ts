@@ -1,15 +1,24 @@
 import type { Request, Response } from "express";
+import { ApiResponse } from "../lib/api-response";
+import { buildPaginationMeta, parsePagination } from "../lib/pagination";
 import * as templateService from "../services/template.service";
 
 export async function listTemplates(req: Request, res: Response) {
   const q = typeof req.query.q === "string" ? req.query.q : undefined;
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
+  const pagination = parsePagination(req.query);
 
-  const templates = await templateService.listTemplates(String(req.params.slug), req.user!.id, {
-    q,
-    status,
+  const { items, total } = await templateService.listTemplates(
+    String(req.params.slug),
+    req.user!.id,
+    { q, status },
+    pagination,
+  );
+
+  ApiResponse.success(res, items, {
+    message: "Templates fetched successfully",
+    pagination: buildPaginationMeta(pagination.page, pagination.limit, total),
   });
-  res.json({ templates });
 }
 
 export async function createTemplate(req: Request, res: Response) {
@@ -20,7 +29,7 @@ export async function createTemplate(req: Request, res: Response) {
     name,
     key,
   );
-  res.status(201).json({ template });
+  ApiResponse.success(res, template, { message: "Template created successfully", statusCode: 201 });
 }
 
 export async function getTemplate(req: Request, res: Response) {
@@ -29,7 +38,7 @@ export async function getTemplate(req: Request, res: Response) {
     req.user!.id,
     String(req.params.key),
   );
-  res.json({ template });
+  ApiResponse.success(res, template, { message: "Template fetched successfully" });
 }
 
 export async function updateTemplateLocale(req: Request, res: Response) {
@@ -42,5 +51,5 @@ export async function updateTemplateLocale(req: Request, res: Response) {
     htmlBody,
     designJson,
   );
-  res.json({ locale });
+  ApiResponse.success(res, locale, { message: "Template saved successfully" });
 }

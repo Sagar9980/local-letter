@@ -1,24 +1,32 @@
 import { auth } from "../auth";
 import { prisma } from "../db";
 import { BadRequestError, NotFoundError } from "../lib/errors";
+import type { PaginationParams } from "../lib/pagination";
 import { getOwnedProject } from "./project.service";
 
-export async function listApiKeys(slug: string, ownerId: string) {
+export async function listApiKeys(slug: string, ownerId: string, pagination: PaginationParams) {
   const project = await getOwnedProject(slug, ownerId);
 
-  return prisma.apiKey.findMany({
-    where: { projectId: project.id },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      start: true,
-      prefix: true,
-      enabled: true,
-      lastRequest: true,
-      createdAt: true,
-    },
-  });
+  const [items, total] = await Promise.all([
+    prisma.apiKey.findMany({
+      where: { projectId: project.id },
+      orderBy: { createdAt: "desc" },
+      skip: pagination.skip,
+      take: pagination.take,
+      select: {
+        id: true,
+        name: true,
+        start: true,
+        prefix: true,
+        enabled: true,
+        lastRequest: true,
+        createdAt: true,
+      },
+    }),
+    prisma.apiKey.count({ where: { projectId: project.id } }),
+  ]);
+
+  return { items, total };
 }
 
 export async function createApiKey(slug: string, ownerId: string, name: unknown) {

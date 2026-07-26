@@ -40,10 +40,8 @@ export function ApiKeysPage() {
   const [copied, setCopied] = useState(false)
 
   async function loadKeys() {
-    const data = await apiFetch<{ apiKeys: ApiKeySummary[] }>(
-      `/projects/${project.slug}/api-keys`,
-    )
-    setKeys(data.apiKeys)
+    const data = await apiFetch<ApiKeySummary[]>(`/projects/${project.slug}/api-keys`)
+    setKeys(data)
   }
 
   useEffect(() => {
@@ -57,11 +55,11 @@ export function ApiKeysPage() {
     setIsSubmitting(true)
 
     try {
-      const data = await apiFetch<{ apiKey: ApiKeyCreated }>(
-        `/projects/${project.slug}/api-keys`,
-        { method: "POST", body: JSON.stringify({ name }) },
-      )
-      setCreatedKey(data.apiKey)
+      const data = await apiFetch<ApiKeyCreated>(`/projects/${project.slug}/api-keys`, {
+        method: "POST",
+        body: JSON.stringify({ name }),
+      })
+      setCreatedKey(data)
       setName("")
       await loadKeys()
     } catch (err) {

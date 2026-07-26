@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../db";
 import { BadRequestError, ConflictError, NotFoundError, isUniqueConstraintError } from "../lib/errors";
+import type { PaginationParams } from "../lib/pagination";
 import { SLUG_PATTERN, slugify } from "../lib/slugify";
 import { getOwnedProject } from "./project.service";
 
@@ -9,7 +10,12 @@ export type TemplateFilters = {
   status?: string;
 };
 
-export async function listTemplates(slug: string, ownerId: string, filters: TemplateFilters) {
+export async function listTemplates(
+  slug: string,
+  ownerId: string,
+  filters: TemplateFilters,
+  pagination: PaginationParams,
+) {
   const project = await getOwnedProject(slug, ownerId);
 
   const templates = await prisma.template.findMany({
@@ -21,7 +27,9 @@ export async function listTemplates(slug: string, ownerId: string, filters: Temp
     orderBy: { updatedAt: "desc" },
   });
 
-  return templates
+  // `status` lives on the default TemplateLocale, not Template, so it can't
+  // be pushed into the Prisma `where` clause above — filter/paginate here.
+  const filtered = templates
     .map((template) => {
       const defaultLocale = template.locales.find((l) => l.locale === template.defaultLocale);
       return {
@@ -36,6 +44,9 @@ export async function listTemplates(slug: string, ownerId: string, filters: Temp
       };
     })
     .filter((template) => !filters.status || template.status === filters.status);
+
+  const items = filtered.slice(pagination.skip, pagination.skip + pagination.take);
+  return { items, total: filtered.length };
 }
 
 export async function createTemplate(

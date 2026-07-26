@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { ApiResponse } from "../lib/api-response";
 import * as renderService from "../services/render.service";
 
 export async function renderTemplate(req: Request, res: Response) {
@@ -8,5 +9,5 @@ export async function renderTemplate(req: Request, res: Response) {
     locale,
     fallbackLocale,
   });
-  res.json(result);
+  ApiResponse.success(res, result, { message: "Template rendered successfully" });
 }

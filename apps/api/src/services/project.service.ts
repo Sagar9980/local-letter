@@ -1,12 +1,19 @@
 import { prisma } from "../db";
 import { BadRequestError, ConflictError, NotFoundError, isUniqueConstraintError } from "../lib/errors";
+import type { PaginationParams } from "../lib/pagination";
 import { SLUG_PATTERN, slugify } from "../lib/slugify";
 
-export function listProjects(ownerId: string) {
-  return prisma.project.findMany({
-    where: { ownerId },
-    orderBy: { createdAt: "desc" },
-  });
+export async function listProjects(ownerId: string, pagination: PaginationParams) {
+  const [items, total] = await Promise.all([
+    prisma.project.findMany({
+      where: { ownerId },
+      orderBy: { createdAt: "desc" },
+      skip: pagination.skip,
+      take: pagination.take,
+    }),
+    prisma.project.count({ where: { ownerId } }),
+  ]);
+  return { items, total };
 }
 
 export async function getOwnedProject(slug: string, ownerId: string) {
