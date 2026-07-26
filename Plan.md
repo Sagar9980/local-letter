@@ -199,3 +199,95 @@ Shortlist under consideration (pending npm/GitHub availability check):
 
 Other candidates: Postbox Studio, Templateer, Mailcraft, Envoy, Scribe,
 Ledger, TemplateForge, MailForge, Notifyr, Templatr.
+
+---
+
+## 12. Current Work: API Keys UI + Resend-Sending SDK
+
+**Scope note (deviation from §7/§8):** the SDK was originally spec'd as
+render-only ("Zero dependency on any mail-sending library"). Per updated
+direction, the SDK will now also **send** the email itself via Resend, so
+host apps only need to call one function. Sections 7/8 below are superseded
+for this iteration; update them once this ships.
+
+### Branch
+1. Create feature branch `feat/api-keys-and-sdk` off `main` before starting
+   any of the work below.
+
+### Step 2 — API Keys dashboard section
+
+Backend (`apps/api/src/index.ts`, `requireSession`-gated, scoped to a
+project the caller owns via existing `getOwnedProject`):
+- `GET  /projects/:slug/api-keys` — list keys for the project (id, name,
+  `start`/`prefix` for display, enabled, createdAt, lastRequest — never the
+  raw `key`).
+- `POST /projects/:slug/api-keys` — create via `auth.api.createApiKey({ body: { name, referenceId: user.id, metadata: { projectId } } })`, then
+  `prisma.apiKey.update` to stamp our own `projectId` column (the plugin
+  doesn't know about it). Returns the **raw key once** — client must show/copy
+  it immediately, it's not retrievable again.
+- `DELETE /projects/:slug/api-keys/:id` — revoke (`auth.api.deleteApiKey` or
+  `enabled: false` update), scoped to project ownership.
+- Update `requireApiKey` middleware (`apps/api/src/middleware/auth.ts`) to
+  also attach `req.apiKeyProjectId` from `result.key.projectId`, so
+  SDK-facing routes can scope queries to that one project without trusting
+  client input.
+
+Frontend:
+- New page `apps/web/src/pages/ApiKeysPage.tsx` at route
+  `/projects/:slug/api-keys` (flip `ProjectSidebar`'s "API Keys" nav item
+  from `disabled: true` to enabled, pointing at `segment: "api-keys"`).
+- Table of existing keys (name, prefix like `sk_live_ab12***`, created,
+  last used, revoke button with confirm).
+- "Create key" dialog: name input → on success, show the raw key **once**
+  in a copy-to-clipboard box with a "you won't see this again" warning.
+
+### Step 3 — Node SDK (`packages/sdk`)
+
+Backend — new SDK-facing render endpoint (`requireApiKey`-gated, per §6):
+- `POST /v1/render/:key` — body `{ variables, locale?, fallbackLocale? }`.
+  Looks up the template by key **scoped to `req.apiKeyProjectId`** (not an
+  arbitrary project), picks the requested locale's published
+  `TemplateLocale` (fallback to `template.defaultLocale`/`fallbackLocale`
+  if requested locale missing or not published), does a simple
+  `{{variable}}` string replacement over `subject`/`htmlBody`, and returns
+  `{ subject, html }`. 404 if template not found in that project, 409/400
+  if no published locale available.
+
+SDK (`packages/sdk/src/index.ts`), depends on `resend` as a dependency:
+```ts
+import { Resend } from "resend";
+
+new TemplateClient({
+  baseUrl: "https://your-local-letter-instance",
+  apiKey: process.env.LOCAL_LETTER_API_KEY,   // project API key from step 2
+  resendApiKey: process.env.RESEND_API_KEY,
+  from: "you@yourdomain.com",
+});
+
+await client.send({
+  template: "welcome-email",
+  to: "user@example.com",
+  variables: { first_name: "Sarah", link: "https://..." },
+  locale: "en", // optional
+});
+```
+- `send()` internally: POST to `/v1/render/:key` with `variables`/`locale`
+  → gets back `{ subject, html }` → calls `resend.emails.send({ from, to,
+  subject, html })` → returns Resend's `{ id }`.
+- Typed errors: template-not-found / not-published (from our API) vs.
+  Resend send failure, kept distinguishable so the host app can handle
+  each differently.
+- No in-memory render cache for v1 (can add later) — keep the first cut
+  simple and correct.
+- `resend` and `@types/node` as the only dependencies; `resend` is a
+  peerDependency-or-direct dep decision to make when implementing (direct
+  dep is simpler since the SDK's whole job now includes sending).
+
+### Open questions to confirm before/while implementing
+- Does the render endpoint require the locale to be `published`, or is
+  `draft` sendable too (useful for testing)? Default assumption: allow
+  sending drafts (no `published` gate) unless told otherwise, since there's
+  no separate "test send" flow yet.
+- One Resend API key per host app (env var), not stored in our DB — SDK
+  talks to Resend directly, our backend never sees the Resend key. Confirms
+  no secret-handling burden added to the platform itself.

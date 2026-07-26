@@ -10,6 +10,7 @@ import { ProjectsListPage } from "@/pages/ProjectsListPage"
 import { ProjectLayout } from "@/components/dashboard/ProjectLayout"
 import { ProjectOverviewPage } from "@/pages/ProjectOverviewPage"
 import { TemplatesPage } from "@/pages/TemplatesPage"
+import { ApiKeysPage } from "@/pages/ApiKeysPage"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 // GrapesJS is heavy (~2MB); keep it out of the main bundle and load on demand.
@@ -58,6 +59,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <ProjectOverviewPage /> },
           { path: "templates", element: <TemplatesPage /> },
+          { path: "api-keys", element: <ApiKeysPage /> },
           {
             path: "templates/:key",
             element: (

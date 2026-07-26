@@ -27,7 +27,7 @@ import {
 const navItems = [
   { label: "Overview", segment: "", icon: FolderKanban, disabled: false },
   { label: "Templates", segment: "templates", icon: LayoutTemplate, disabled: false },
-  { label: "API Keys", segment: "api-keys", icon: KeySquare, disabled: true },
+  { label: "API Keys", segment: "api-keys", icon: KeySquare, disabled: false },
 ]
 
 function projectInitial(name: string) {
