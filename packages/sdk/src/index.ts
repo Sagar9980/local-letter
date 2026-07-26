@@ -56,6 +56,14 @@ interface RenderResponse {
   locale: string;
 }
 
+// local-letter's API wraps every response in a { success, message, data }
+// envelope; unwrap it here so the rest of the SDK deals in plain payloads.
+interface ApiEnvelope<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
 export class TemplateClient {
   private readonly resend: Resend;
 
@@ -80,12 +88,13 @@ export class TemplateClient {
       }),
     });
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({ error: res.statusText }));
-      throw new TemplateRenderError(body.error ?? "Failed to render template", res.status);
+    const body = (await res.json().catch(() => null)) as ApiEnvelope<RenderResponse> | null;
+
+    if (!res.ok || !body || !body.success) {
+      throw new TemplateRenderError(body?.message ?? "Failed to render template", res.status);
     }
 
-    return res.json() as Promise<RenderResponse>;
+    return body.data;
   }
 
   /**

@@ -35,11 +35,11 @@ export function TemplateEditorPage() {
   useEffect(() => {
     let cancelled = false
 
-    apiFetch<{ template: TemplateDetail }>(`/projects/${project.slug}/templates/${key}`)
+    apiFetch<TemplateDetail>(`/projects/${project.slug}/templates/${key}`)
       .then((data) => {
         if (cancelled) return
-        setTemplate(data.template)
-        const locale = data.template.locales.find((l) => l.locale === data.template.defaultLocale)
+        setTemplate(data)
+        const locale = data.locales.find((l) => l.locale === data.defaultLocale)
         setSubject(locale?.subject ?? "")
         setStatus(locale?.status ?? "draft")
       })

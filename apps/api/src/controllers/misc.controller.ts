@@ -1,13 +1,18 @@
 import type { Request, Response } from "express";
+import { ApiResponse } from "../lib/api-response";
 
 export function health(_req: Request, res: Response) {
-  res.json({ status: "ok" });
+  ApiResponse.success(res, { status: "ok" }, { message: "Service is healthy" });
 }
 
 export function me(req: Request, res: Response) {
-  res.json({ user: req.user });
+  ApiResponse.success(res, req.user, { message: "Current user fetched successfully" });
 }
 
 export function whoami(req: Request, res: Response) {
-  res.json({ referenceId: req.apiKeyReferenceId });
+  ApiResponse.success(
+    res,
+    { referenceId: req.apiKeyReferenceId },
+    { message: "API key verified successfully" },
+  );
 }

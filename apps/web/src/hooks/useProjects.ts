@@ -6,8 +6,8 @@ export function useProjects() {
   const [projects, setProjects] = useState<Project[] | null>(null)
 
   const refresh = useCallback(async () => {
-    const data = await apiFetch<{ projects: Project[] }>("/projects")
-    setProjects(data.projects)
+    const data = await apiFetch<Project[]>("/projects")
+    setProjects(data)
   }, [])
 
   useEffect(() => {

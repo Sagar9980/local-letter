@@ -54,10 +54,10 @@ export function TemplatesPage() {
     if (search) params.set("q", search)
     if (status !== "all") params.set("status", status)
     const query = params.toString()
-    const data = await apiFetch<{ templates: TemplateSummary[] }>(
+    const data = await apiFetch<TemplateSummary[]>(
       `/projects/${project.slug}/templates${query ? `?${query}` : ""}`,
     )
-    setTemplates(data.templates)
+    setTemplates(data)
   }
 
   useEffect(() => {
@@ -72,13 +72,13 @@ export function TemplatesPage() {
     setIsSubmitting(true)
 
     try {
-      const data = await apiFetch<{ template: { key: string } }>(
-        `/projects/${project.slug}/templates`,
-        { method: "POST", body: JSON.stringify({ name }) },
-      )
+      const data = await apiFetch<{ key: string }>(`/projects/${project.slug}/templates`, {
+        method: "POST",
+        body: JSON.stringify({ name }),
+      })
       setIsDialogOpen(false)
       setName("")
-      navigate(`/projects/${project.slug}/templates/${data.template.key}`)
+      navigate(`/projects/${project.slug}/templates/${data.key}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create template")
     } finally {

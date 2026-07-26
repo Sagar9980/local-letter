@@ -1,5 +1,27 @@
 const API_URL = import.meta.env.VITE_API_URL
 
+interface ApiSuccessBody<T> {
+  success: true
+  statusCode: number
+  message: string
+  data: T
+  meta?: {
+    pagination?: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+  }
+}
+
+interface ApiErrorBody {
+  success: false
+  statusCode: number
+  message: string
+  errors?: unknown
+}
+
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
@@ -10,14 +32,14 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     },
   })
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: res.statusText }))
-    throw new Error(body.error ?? "Request failed")
+  const body = (await res.json().catch(() => null)) as
+    | ApiSuccessBody<T>
+    | ApiErrorBody
+    | null
+
+  if (!res.ok || !body || body.success === false) {
+    throw new Error(body?.message ?? res.statusText ?? "Request failed")
   }
 
-  if (res.status === 204) {
-    return undefined as T
-  }
-
-  return res.json() as Promise<T>
+  return body.data
 }
