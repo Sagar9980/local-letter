@@ -11,6 +11,7 @@ declare global {
           : never
         : never;
       apiKeyReferenceId?: string;
+      apiKeyProjectId?: string;
     }
   }
 }
@@ -42,5 +43,7 @@ export async function requireApiKey(req: Request, res: Response, next: NextFunct
   }
 
   req.apiKeyReferenceId = result.key.referenceId ?? undefined;
+  req.apiKeyProjectId =
+    (result.key as unknown as { projectId?: string | null }).projectId ?? undefined;
   next();
 }
