@@ -238,6 +238,134 @@ app.put("/projects/:slug/templates/:key", requireSession, async (req, res) => {
   res.json({ locale });
 });
 
+// --- API Keys (dashboard-managed, consumed by the SDK) ---
+
+app.get("/projects/:slug/api-keys", requireSession, async (req, res) => {
+  const project = await getOwnedProject(String(req.params.slug), req.user!.id);
+  if (!project) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  const keys = await prisma.apiKey.findMany({
+    where: { projectId: project.id },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      start: true,
+      prefix: true,
+      enabled: true,
+      lastRequest: true,
+      createdAt: true,
+    },
+  });
+
+  res.json({ apiKeys: keys });
+});
+
+app.post("/projects/:slug/api-keys", requireSession, async (req, res) => {
+  const project = await getOwnedProject(String(req.params.slug), req.user!.id);
+  if (!project) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  const { name } = req.body ?? {};
+  if (typeof name !== "string" || name.trim().length === 0) {
+    res.status(400).json({ error: "name is required" });
+    return;
+  }
+
+  const created = await auth.api.createApiKey({
+    body: { name: name.trim(), userId: req.user!.id, metadata: { projectId: project.id } },
+  });
+
+  const apiKey = await prisma.apiKey.update({
+    where: { id: created.id },
+    data: { projectId: project.id },
+  });
+
+  // Raw key is only ever available at creation time; surface it once here.
+  res.status(201).json({
+    apiKey: {
+      id: apiKey.id,
+      name: apiKey.name,
+      start: apiKey.start,
+      prefix: apiKey.prefix,
+      enabled: apiKey.enabled,
+      createdAt: apiKey.createdAt,
+      key: created.key,
+    },
+  });
+});
+
+app.delete("/projects/:slug/api-keys/:id", requireSession, async (req, res) => {
+  const project = await getOwnedProject(String(req.params.slug), req.user!.id);
+  if (!project) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
+
+  const apiKey = await prisma.apiKey.findFirst({
+    where: { id: String(req.params.id), projectId: project.id },
+  });
+
+  if (!apiKey) {
+    res.status(404).json({ error: "API key not found" });
+    return;
+  }
+
+  await prisma.apiKey.delete({ where: { id: apiKey.id } });
+  res.status(204).end();
+});
+
+// --- SDK-facing render endpoint (project-scoped API key auth) ---
+
+function interpolate(input: string, variables: Record<string, unknown>) {
+  return input.replace(/{{\s*([\w.]+)\s*}}/g, (match, token: string) => {
+    const value = variables[token];
+    return value === undefined || value === null ? match : String(value);
+  });
+}
+
+app.post("/v1/render/:key", requireApiKey, async (req, res) => {
+  const projectId = req.apiKeyProjectId;
+  if (!projectId) {
+    res.status(403).json({ error: "API key is not linked to a project" });
+    return;
+  }
+
+  const template = await prisma.template.findFirst({
+    where: { projectId, key: String(req.params.key) },
+    include: { locales: true },
+  });
+
+  if (!template) {
+    res.status(404).json({ error: "Template not found" });
+    return;
+  }
+
+  const { variables, locale: requestedLocale, fallbackLocale } = req.body ?? {};
+  const vars: Record<string, unknown> = typeof variables === "object" && variables ? variables : {};
+
+  const locale =
+    template.locales.find((l) => l.locale === requestedLocale) ??
+    template.locales.find((l) => l.locale === fallbackLocale) ??
+    template.locales.find((l) => l.locale === template.defaultLocale);
+
+  if (!locale) {
+    res.status(404).json({ error: "No locale available for this template" });
+    return;
+  }
+
+  res.json({
+    subject: interpolate(locale.subject, vars),
+    html: interpolate(locale.htmlBody, vars),
+    locale: locale.locale,
+  });
+});
+
 app.listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
 });
