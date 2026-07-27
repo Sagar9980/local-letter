@@ -52,35 +52,95 @@
 
 .gjs-cv-canvas {
   background-color: var(--muted);
-  top: 0;
-  width: 100%;
+}
+
+.gjs-pn-panels {
   height: 100%;
 }
 
+.gjs-pn-commands,
+.gjs-pn-options {
+  padding: 6px 10px;
+}
+
+.gjs-pn-btn {
+  margin: 0 2px;
+  padding: 6px;
+}
+
+.gjs-blocks-c {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 12px;
+}
+
 .gjs-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: auto;
+  min-height: 72px;
+  margin: 0;
+  padding: 10px 6px;
   background-color: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: none;
-  transition: border-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .gjs-block:hover {
   border-color: var(--primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .gjs-block-label {
   color: var(--foreground);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.gjs-block-category .gjs-title {
+  padding: 10px 12px;
   font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted-foreground) !important;
 }
 
 .gjs-layer {
   border-color: var(--border) !important;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 .gjs-sm-sector .gjs-sm-title,
 .gjs-layer-title {
   color: var(--foreground) !important;
+}
+
+.gjs-sm-sector {
+  padding: 4px 12px;
+}
+
+.gjs-sm-sector-title {
+  padding: 8px 0;
+  font-weight: 500;
+}
+
+.gjs-sm-properties {
+  padding: 4px 0 10px;
+}
+
+.gjs-clm-tags,
+.gjs-trt-traits {
+  padding: 12px;
 }
 
 .gjs-field {

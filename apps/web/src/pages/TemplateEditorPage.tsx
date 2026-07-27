@@ -130,7 +130,7 @@ export function TemplateEditorPage() {
 
   if (notFound) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+      <div className="flex h-screen flex-col items-center justify-center gap-3 text-center">
         <p className="font-medium">Template not found</p>
         <Button variant="outline" onClick={() => navigate(`/projects/${project.slug}/templates`)}>
           Back to templates
@@ -141,15 +141,15 @@ export function TemplateEditorPage() {
 
   if (!template) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-screen items-center justify-center">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background px-4">
+    <div className="flex h-screen flex-col bg-muted/40">
+      <header className="flex h-16 shrink-0 items-center gap-3 border-b bg-background px-5 shadow-sm">
         <Button
           variant="ghost"
           size="icon"
@@ -157,7 +157,7 @@ export function TemplateEditorPage() {
         >
           <ArrowLeft />
         </Button>
-        <Separator orientation="vertical" className="h-5" />
+        <Separator orientation="vertical" className="h-6" />
         <div className="min-w-0">
           <p className="truncate text-sm leading-tight font-medium">{template.name}</p>
           <p className="truncate text-xs text-muted-foreground">{template.key}</p>
@@ -178,7 +178,7 @@ export function TemplateEditorPage() {
               setSubject(e.target.value)
               setIsDirty(true)
             }}
-            className="h-9 max-w-xl"
+            className="h-9 max-w-xl bg-muted/40"
           />
         </div>
 
@@ -206,8 +206,10 @@ export function TemplateEditorPage() {
         <p className="border-b bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
       )}
 
-      <div className="min-h-0 flex-1">
-        <div ref={containerRef} className="h-full" />
+      <div className="min-h-0 flex-1 overflow-hidden bg-muted/40 p-4">
+        <div className="mx-auto h-full max-w-6xl overflow-hidden rounded-xl border bg-background shadow-sm">
+          <div ref={containerRef} className="h-full" />
+        </div>
       </div>
     </div>
   )

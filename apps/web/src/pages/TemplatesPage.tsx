@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { FormEvent } from "react"
-import { FileText, Plus, Search } from "lucide-react"
+import { FileText, Plus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useCurrentProject } from "@/lib/project-context"
 import { apiFetch } from "@/lib/api"
@@ -41,7 +41,6 @@ export function TemplatesPage() {
   const project = useCurrentProject()
 
   const [templates, setTemplates] = useState<TemplateSummary[] | null>(null)
-  const [search, setSearch] = useState("")
   const [status, setStatus] = useState<string>("all")
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -51,7 +50,6 @@ export function TemplatesPage() {
 
   async function loadTemplates() {
     const params = new URLSearchParams()
-    if (search) params.set("q", search)
     if (status !== "all") params.set("status", status)
     const query = params.toString()
     const data = await apiFetch<TemplateSummary[]>(
@@ -61,10 +59,9 @@ export function TemplatesPage() {
   }
 
   useEffect(() => {
-    const timeout = setTimeout(loadTemplates, 250)
-    return () => clearTimeout(timeout)
+    loadTemplates()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, status, project.slug])
+  }, [status, project.slug])
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault()
@@ -143,18 +140,12 @@ export function TemplatesPage() {
       </div>
 
       <Card>
-        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search templates..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
-            />
-          </div>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <p className="text-sm font-medium text-muted-foreground">
+            {templates?.length ?? 0} template{templates?.length === 1 ? "" : "s"}
+          </p>
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger size="sm" className="w-32">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -179,8 +170,8 @@ export function TemplatesPage() {
               <div>
                 <p className="font-medium">No templates found</p>
                 <p className="text-sm text-muted-foreground">
-                  {search || status !== "all"
-                    ? "Try adjusting your search or filter."
+                  {status !== "all"
+                    ? "Try adjusting your filter."
                     : "Create your first email template to get started."}
                 </p>
               </div>
