@@ -36,8 +36,10 @@ export async function createApiKey(slug: string, ownerId: string, name: unknown)
     throw new BadRequestError("name is required");
   }
 
+  // No `metadata` here: the plugin runs with metadata disabled (it rejects the
+  // field outright), and the project link is stamped onto our own column below.
   const created = await auth.api.createApiKey({
-    body: { name: name.trim(), userId: ownerId, metadata: { projectId: project.id } },
+    body: { name: name.trim(), userId: ownerId },
   });
 
   // Better Auth's plugin doesn't know about our custom `projectId` column,

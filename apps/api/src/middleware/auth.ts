@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "../auth";
+import { prisma } from "../db";
 import { ApiResponse } from "../lib/api-response";
 
 declare global {
@@ -44,7 +45,13 @@ export async function requireApiKey(req: Request, res: Response, next: NextFunct
   }
 
   req.apiKeyReferenceId = result.key.referenceId ?? undefined;
-  req.apiKeyProjectId =
-    (result.key as unknown as { projectId?: string | null }).projectId ?? undefined;
+
+  // `verifyApiKey` only projects the plugin's own columns, so our `projectId`
+  // link has to be read back from the row itself.
+  const apiKey = await prisma.apiKey.findUnique({
+    where: { id: result.key.id },
+    select: { projectId: true },
+  });
+  req.apiKeyProjectId = apiKey?.projectId ?? undefined;
   next();
 }
