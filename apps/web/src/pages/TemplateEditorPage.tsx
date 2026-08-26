@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
-import { ArrowLeft, Eye, Loader2, Save } from "lucide-react"
+import type { FormEvent } from "react"
+import { ArrowLeft, Eye, Loader2, Plus, Save, Trash2 } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import grapesjs from "grapesjs"
 import type { Editor } from "grapesjs"
@@ -8,12 +9,30 @@ import "grapesjs/dist/css/grapes.min.css"
 import "@/styles/grapesjs-theme.css"
 import { useCurrentProject } from "@/lib/project-context"
 import { apiFetch } from "@/lib/api"
-import type { TemplateDetail } from "@/lib/templates"
+import { cn } from "@/lib/utils"
+import { sortLocales } from "@/lib/templates"
+import type { TemplateDetail, TemplateLocale } from "@/lib/templates"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+
+const BLANK = "__blank__"
 
 export function TemplateEditorPage() {
   const navigate = useNavigate()
@@ -22,8 +41,16 @@ export function TemplateEditorPage() {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const editorRef = useRef<Editor | null>(null)
+  // Suppresses the dirty flag while content is being loaded into the editor
+  // programmatically — GrapesJS fires `update` for those changes too.
+  const isLoadingRef = useRef(true)
+  // Read by the locale-loading effect, which must not re-run on every save.
+  const localesRef = useRef<TemplateLocale[]>([])
 
   const [template, setTemplate] = useState<TemplateDetail | null>(null)
+  const [locales, setLocalesState] = useState<TemplateLocale[]>([])
+  const [activeLocale, setActiveLocale] = useState("")
+  const [isEditorReady, setIsEditorReady] = useState(false)
   const [subject, setSubject] = useState("")
   const [status, setStatus] = useState("draft")
   const [isSaving, setIsSaving] = useState(false)
@@ -32,6 +59,17 @@ export function TemplateEditorPage() {
   const [error, setError] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
 
+  const [isLocaleDialogOpen, setIsLocaleDialogOpen] = useState(false)
+  const [newLocale, setNewLocale] = useState("")
+  const [copyFrom, setCopyFrom] = useState(BLANK)
+  const [localeError, setLocaleError] = useState<string | null>(null)
+  const [isAddingLocale, setIsAddingLocale] = useState(false)
+
+  function setLocales(next: TemplateLocale[]) {
+    localesRef.current = next
+    setLocalesState(next)
+  }
+
   useEffect(() => {
     let cancelled = false
 
@@ -39,9 +77,8 @@ export function TemplateEditorPage() {
       .then((data) => {
         if (cancelled) return
         setTemplate(data)
-        const locale = data.locales.find((l) => l.locale === data.defaultLocale)
-        setSubject(locale?.subject ?? "")
-        setStatus(locale?.status ?? "draft")
+        setLocales(sortLocales(data.locales, data.defaultLocale))
+        setActiveLocale(data.defaultLocale)
       })
       .catch(() => {
         if (!cancelled) setNotFound(true)
@@ -52,10 +89,10 @@ export function TemplateEditorPage() {
     }
   }, [project.slug, key])
 
+  // Keyed on the template id so refetches/edits of the template object don't
+  // tear down and rebuild the editor — content swaps happen in the effect below.
   useEffect(() => {
     if (!template || !containerRef.current || editorRef.current) return
-
-    const locale = template.locales.find((l) => l.locale === template.defaultLocale)
 
     const editor = grapesjs.init({
       container: containerRef.current,
@@ -65,24 +102,54 @@ export function TemplateEditorPage() {
       plugins: [newsletterPreset],
     })
 
-    if (locale?.designJson) {
-      try {
-        editor.loadProjectData(locale.designJson)
-      } catch {
-        editor.setComponents(locale.htmlBody || "")
-      }
-    } else if (locale?.htmlBody) {
-      editor.setComponents(locale.htmlBody)
-    }
+    editor.on("update", () => {
+      if (!isLoadingRef.current) setIsDirty(true)
+    })
 
-    editor.on("update", () => setIsDirty(true))
     editorRef.current = editor
+    setIsEditorReady(true)
 
     return () => {
       editor.destroy()
       editorRef.current = null
+      setIsEditorReady(false)
     }
-  }, [template])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [template?.id])
+
+  // Loads the active locale's design into the editor — on first render and on
+  // every tab switch.
+  useEffect(() => {
+    const editor = editorRef.current
+    if (!editor || !isEditorReady || !activeLocale) return
+
+    const locale = localesRef.current.find((l) => l.locale === activeLocale)
+    isLoadingRef.current = true
+
+    if (locale?.designJson) {
+      try {
+        editor.loadProjectData(locale.designJson)
+      } catch {
+        editor.setStyle("")
+        editor.setComponents(locale.htmlBody || "")
+      }
+    } else {
+      // Clear the previous locale's CSS rules too, or they bleed into this one.
+      editor.setStyle("")
+      editor.setComponents(locale?.htmlBody || "")
+    }
+
+    editor.UndoManager.clear()
+    setSubject(locale?.subject ?? "")
+    setStatus(locale?.status ?? "draft")
+
+    const timer = setTimeout(() => {
+      isLoadingRef.current = false
+      setIsDirty(false)
+    }, 0)
+
+    return () => clearTimeout(timer)
+  }, [activeLocale, isEditorReady])
 
   useEffect(() => {
     function handleBeforeUnload(e: BeforeUnloadEvent) {
@@ -95,7 +162,7 @@ export function TemplateEditorPage() {
 
   async function handleSave() {
     const editor = editorRef.current
-    if (!editor) return
+    if (!editor || !activeLocale) return
 
     setIsSaving(true)
     setError(null)
@@ -104,16 +171,89 @@ export function TemplateEditorPage() {
       const htmlBody = editor.getHtml()
       const designJson = editor.getProjectData()
 
-      await apiFetch(`/projects/${project.slug}/templates/${key}`, {
-        method: "PUT",
-        body: JSON.stringify({ subject, htmlBody, designJson }),
-      })
+      const saved = await apiFetch<TemplateLocale>(
+        `/projects/${project.slug}/templates/${key}/locales/${activeLocale}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ subject, htmlBody, designJson }),
+        },
+      )
+
+      // Keep the in-memory copy current so switching tabs and back shows the
+      // saved design instead of what was last fetched.
+      setLocales(
+        localesRef.current.map((l) => (l.locale === activeLocale ? { ...l, ...saved } : l)),
+      )
       setIsDirty(false)
       setLastSavedAt(new Date())
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save template")
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  function handleSwitchLocale(locale: string) {
+    if (locale === activeLocale) return
+    if (
+      isDirty &&
+      !window.confirm(`Discard unsaved changes to the ${activeLocale} version?`)
+    ) {
+      return
+    }
+    setError(null)
+    setActiveLocale(locale)
+  }
+
+  async function handleAddLocale(e: FormEvent) {
+    e.preventDefault()
+    setLocaleError(null)
+    setIsAddingLocale(true)
+
+    try {
+      const created = await apiFetch<TemplateLocale>(
+        `/projects/${project.slug}/templates/${key}/locales`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            locale: newLocale.trim(),
+            copyFrom: copyFrom === BLANK ? undefined : copyFrom,
+          }),
+        },
+      )
+
+      setLocales(sortLocales([...localesRef.current, created], template!.defaultLocale))
+      setIsLocaleDialogOpen(false)
+      setNewLocale("")
+      setCopyFrom(BLANK)
+      setIsDirty(false)
+      setActiveLocale(created.locale)
+    } catch (err) {
+      setLocaleError(err instanceof Error ? err.message : "Failed to add locale")
+    } finally {
+      setIsAddingLocale(false)
+    }
+  }
+
+  async function handleDeleteLocale() {
+    if (!template || activeLocale === template.defaultLocale) return
+    if (
+      !window.confirm(
+        `Delete the ${activeLocale} version of this template? Sends requesting ${activeLocale} will fall back to ${template.defaultLocale}.`,
+      )
+    ) {
+      return
+    }
+
+    try {
+      await apiFetch(`/projects/${project.slug}/templates/${key}/locales/${activeLocale}`, {
+        method: "DELETE",
+      })
+      setLocales(localesRef.current.filter((l) => l.locale !== activeLocale))
+      setIsDirty(false)
+      setActiveLocale(template.defaultLocale)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete locale")
     }
   }
 
@@ -202,6 +342,55 @@ export function TemplateEditorPage() {
         </Button>
       </header>
 
+      <div className="flex h-11 shrink-0 items-center gap-1 border-b bg-background px-4">
+        <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+          {locales.map((locale) => (
+            <button
+              key={locale.locale}
+              type="button"
+              onClick={() => handleSwitchLocale(locale.locale)}
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors",
+                locale.locale === activeLocale
+                  ? "bg-muted font-medium text-foreground"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+              )}
+            >
+              {locale.locale}
+              {locale.locale === template.defaultLocale && (
+                <span className="text-[10px] tracking-wide text-muted-foreground uppercase">
+                  default
+                </span>
+              )}
+              {locale.status === "published" && (
+                <span className="size-1.5 rounded-full bg-primary" title="Published" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {activeLocale !== template.defaultLocale && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="shrink-0 text-muted-foreground hover:text-destructive"
+            onClick={handleDeleteLocale}
+          >
+            <Trash2 />
+            Delete {activeLocale}
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
+          onClick={() => setIsLocaleDialogOpen(true)}
+        >
+          <Plus />
+          Add locale
+        </Button>
+      </div>
+
       {error && (
         <p className="border-b bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
       )}
@@ -211,6 +400,66 @@ export function TemplateEditorPage() {
           <div ref={containerRef} className="h-full" />
         </div>
       </div>
+
+      <Dialog
+        open={isLocaleDialogOpen}
+        onOpenChange={(open) => {
+          setIsLocaleDialogOpen(open)
+          if (!open) {
+            setNewLocale("")
+            setCopyFrom(BLANK)
+            setLocaleError(null)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add locale</DialogTitle>
+          </DialogHeader>
+          <form className="flex flex-col gap-4" onSubmit={handleAddLocale}>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="new-locale">Locale code</Label>
+              <Input
+                id="new-locale"
+                value={newLocale}
+                onChange={(e) => setNewLocale(e.target.value)}
+                placeholder="fr, pt-BR, es-MX"
+                autoFocus
+                required
+              />
+              <p className="text-sm text-muted-foreground">
+                A language code, optionally with a region — the SDK matches this against its{" "}
+                <code>locale</code> option.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="copy-from">Start from</Label>
+              <Select value={copyFrom} onValueChange={setCopyFrom}>
+                <SelectTrigger id="copy-from" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={BLANK}>Blank template</SelectItem>
+                  {locales.map((locale) => (
+                    <SelectItem key={locale.locale} value={locale.locale}>
+                      Copy design from {locale.locale}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {localeError && <p className="text-sm text-destructive">{localeError}</p>}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsLocaleDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isAddingLocale}>
+                {isAddingLocale ? "Adding..." : "Add locale"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

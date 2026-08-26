@@ -184,6 +184,7 @@ export function TemplatesPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Key</TableHead>
                     <TableHead>Subject</TableHead>
+                    <TableHead>Locales</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Updated</TableHead>
                   </TableRow>
@@ -201,6 +202,20 @@ export function TemplatesPage() {
                       <TableCell className="text-muted-foreground">{template.key}</TableCell>
                       <TableCell className="max-w-56 truncate text-muted-foreground">
                         {template.subject || "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {template.locales.slice(0, 3).map((locale) => (
+                            <Badge key={locale} variant="outline" className="font-normal">
+                              {locale}
+                            </Badge>
+                          ))}
+                          {template.locales.length > 3 && (
+                            <Badge variant="outline" className="font-normal">
+                              +{template.locales.length - 3}
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant={template.status === "published" ? "default" : "secondary"}>
