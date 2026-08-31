@@ -47,9 +47,33 @@ export async function updateTemplateLocale(req: Request, res: Response) {
     String(req.params.slug),
     req.user!.id,
     String(req.params.key),
+    // Omitted on the template-level route, which always saves the default locale.
+    req.params.locale,
     subject,
     htmlBody,
     designJson,
   );
   ApiResponse.success(res, locale, { message: "Template saved successfully" });
+}
+
+export async function createTemplateLocale(req: Request, res: Response) {
+  const { locale, copyFrom } = req.body ?? {};
+  const created = await templateService.createTemplateLocale(
+    String(req.params.slug),
+    req.user!.id,
+    String(req.params.key),
+    locale,
+    copyFrom,
+  );
+  ApiResponse.success(res, created, { message: "Locale added successfully", statusCode: 201 });
+}
+
+export async function deleteTemplateLocale(req: Request, res: Response) {
+  const deleted = await templateService.deleteTemplateLocale(
+    String(req.params.slug),
+    req.user!.id,
+    String(req.params.key),
+    req.params.locale,
+  );
+  ApiResponse.success(res, deleted, { message: "Locale deleted successfully" });
 }

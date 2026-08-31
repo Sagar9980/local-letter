@@ -1,5 +1,6 @@
 import { prisma } from "../db";
 import { ForbiddenError, NotFoundError } from "../lib/errors";
+import { LOCALE_PATTERN, normalizeLocale } from "../lib/locale";
 import { interpolate } from "../utils/interpolate";
 
 export type RenderOptions = {
@@ -24,9 +25,14 @@ export async function renderTemplate(projectId: string | undefined, key: string,
   const variables: Record<string, unknown> =
     typeof opts.variables === "object" && opts.variables ? (opts.variables as Record<string, unknown>) : {};
 
+  // Requested codes are normalised ("EN-us" -> "en-US") so casing differences
+  // between the host app and the dashboard don't silently miss a translation.
+  const requested = toLocaleCode(opts.locale);
+  const fallback = toLocaleCode(opts.fallbackLocale);
+
   const locale =
-    template.locales.find((l) => l.locale === opts.locale) ??
-    template.locales.find((l) => l.locale === opts.fallbackLocale) ??
+    template.locales.find((l) => l.locale === requested) ??
+    template.locales.find((l) => l.locale === fallback) ??
     template.locales.find((l) => l.locale === template.defaultLocale);
 
   if (!locale) {
@@ -38,4 +44,9 @@ export async function renderTemplate(projectId: string | undefined, key: string,
     html: interpolate(locale.htmlBody, variables),
     locale: locale.locale,
   };
+}
+
+function toLocaleCode(value: unknown): string | undefined {
+  if (typeof value !== "string" || !LOCALE_PATTERN.test(value.trim())) return undefined;
+  return normalizeLocale(value);
 }
