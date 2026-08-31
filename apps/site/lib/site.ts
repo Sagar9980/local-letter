@@ -1,0 +1,15 @@
+export const site = {
+  name: 'Local Letter',
+  tagline: 'Multi-language email templates, self-hosted.',
+  githubUrl: 'https://github.com/Sagar9980/local-letter',
+  salesEmail: 'sales@localletter.dev',
+  /** Kept as data so the nav, footer and CTAs can never drift out of sync. */
+  nav: [
+    { label: 'Features', href: '/#features' },
+    { label: 'How it works', href: '/#how-it-works' },
+    { label: 'SDK', href: '/#sdk' },
+    { label: 'Self-hosting', href: '/#self-host' },
+  ],
+} as const
+
+export type NavItem = (typeof site.nav)[number]

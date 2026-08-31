@@ -1,0 +1,372 @@
+@import "tailwindcss";
+
+@theme {
+  /* Faces are loaded by next/font in app/layout.tsx, which exposes each one
+     as a CSS variable we hand straight to Tailwind's font tokens. */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-serif: var(--font-instrument-serif), "Iowan Old Style", Georgia, serif;
+
+  /* Ink — warm near-black base */
+  --color-ink-950: oklch(0.129 0.006 60);
+  --color-ink-900: oklch(0.168 0.007 62);
+  --color-ink-850: oklch(0.201 0.008 64);
+  --color-ink-800: oklch(0.246 0.009 66);
+  --color-ink-700: oklch(0.334 0.01 68);
+  --color-ink-500: oklch(0.556 0.012 70);
+  --color-ink-300: oklch(0.742 0.011 74);
+  --color-ink-100: oklch(0.923 0.008 78);
+  --color-ink-50: oklch(0.972 0.006 82);
+
+  /* Ember — the stamp/wax accent */
+  --color-ember-200: oklch(0.902 0.06 74);
+  --color-ember-300: oklch(0.851 0.098 76);
+  --color-ember-400: oklch(0.804 0.135 74);
+  --color-ember-500: oklch(0.752 0.152 68);
+  --color-ember-600: oklch(0.654 0.146 52);
+
+  /* Seal — the coral counter-accent */
+  --color-seal-400: oklch(0.735 0.163 34);
+  --color-seal-500: oklch(0.672 0.187 29);
+
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.75rem;
+
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: color-mix(in oklab, var(--color-ink-50) 8%, transparent);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-ink-950);
+    color: var(--color-ink-100);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-ember-400) 32%, transparent);
+    color: var(--color-ink-50);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink-950);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-800);
+    border-radius: 999px;
+    border: 2px solid var(--color-ink-950);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-700);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ember-400);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* Shell ---------------------------------------------------------------- */
+  .ll-shell {
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .ll-shell {
+      padding-inline: 2rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .ll-shell {
+      padding-inline: 3rem;
+    }
+  }
+
+  /* Surfaces ------------------------------------------------------------- */
+  .ll-panel {
+    position: relative;
+    border-radius: var(--radius-3xl);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--color-ink-50) 5%, transparent),
+        color-mix(in oklab, var(--color-ink-50) 1.5%, transparent)
+      );
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, var(--color-ink-50) 9%, transparent),
+      inset 0 0 0 1px color-mix(in oklab, var(--color-ink-50) 6%, transparent),
+      0 24px 60px -32px rgb(0 0 0 / 0.9);
+    backdrop-filter: blur(12px);
+  }
+
+  .ll-panel-hover {
+    transition:
+      transform 400ms var(--ease-out-soft),
+      box-shadow 400ms var(--ease-out-soft);
+  }
+  .ll-panel-hover:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, var(--color-ink-50) 14%, transparent),
+      inset 0 0 0 1px color-mix(in oklab, var(--color-ember-400) 16%, transparent),
+      0 34px 70px -34px rgb(0 0 0 / 0.95);
+  }
+
+  /* Buttons -------------------------------------------------------------- */
+  .ll-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 2.75rem;
+    padding-inline: 1.4rem;
+    border-radius: 999px;
+    font-size: 0.9375rem;
+    font-weight: 450;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    transition:
+      transform 220ms var(--ease-out-soft),
+      background-color 220ms ease,
+      color 220ms ease,
+      box-shadow 220ms ease,
+      opacity 220ms ease;
+  }
+  .ll-btn:active {
+    transform: scale(0.965);
+  }
+
+  .ll-btn-primary {
+    background: linear-gradient(180deg, var(--color-ember-300), var(--color-ember-500));
+    color: oklch(0.22 0.04 62);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.55),
+      inset 0 -1px 0 0 rgb(0 0 0 / 0.16),
+      0 10px 30px -12px color-mix(in oklab, var(--color-ember-500) 70%, transparent);
+  }
+  .ll-btn-primary:hover {
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.7),
+      inset 0 -1px 0 0 rgb(0 0 0 / 0.16),
+      0 16px 40px -12px color-mix(in oklab, var(--color-ember-500) 85%, transparent);
+  }
+
+  .ll-btn-ghost {
+    color: var(--color-ink-100);
+    background: color-mix(in oklab, var(--color-ink-50) 4%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink-50) 12%, transparent);
+  }
+  .ll-btn-ghost:hover {
+    background: color-mix(in oklab, var(--color-ink-50) 9%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink-50) 20%, transparent);
+  }
+
+  /* Eyebrow pill --------------------------------------------------------- */
+  .ll-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem 0.4rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    letter-spacing: -0.005em;
+    color: var(--color-ink-100);
+    background: color-mix(in oklab, var(--color-ink-50) 4%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink-50) 10%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Typography ----------------------------------------------------------- */
+  .ll-display {
+    font-size: clamp(2rem, 8.5vw, 5.25rem);
+    line-height: 0.96;
+    letter-spacing: -0.038em;
+    font-weight: 480;
+  }
+  .ll-h2 {
+    font-size: clamp(2rem, 4.4vw, 3.15rem);
+    line-height: 1.04;
+    letter-spacing: -0.032em;
+    font-weight: 480;
+  }
+  .ll-serif {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .ll-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-ember-300) 82%, white);
+  }
+
+  .ll-gradient-text {
+    background: linear-gradient(
+      104deg,
+      var(--color-ink-50) 6%,
+      var(--color-ember-200) 46%,
+      var(--color-seal-400) 88%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Horizon glow --------------------------------------------------------- */
+  .ll-glow {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .ll-glow-primary {
+    left: 50%;
+    top: -22%;
+    width: min(78rem, 150vw);
+    height: min(62rem, 78vh);
+    translate: -50% 0;
+    filter: blur(90px);
+    /* The bloom fills a phone screen edge to edge, so it has to sit back on
+       narrow viewports or it swamps the headline. */
+    opacity: calc(0.32 * var(--ll-glow-intensity, 1));
+    background: radial-gradient(
+      closest-side,
+      var(--color-ember-500) 0%,
+      color-mix(in oklab, var(--color-ember-600) 55%, transparent) 42%,
+      transparent 72%
+    );
+  }
+
+  .ll-glow-secondary {
+    left: 14%;
+    top: 4%;
+    width: min(46rem, 100vw);
+    height: min(38rem, 52vh);
+    filter: blur(80px);
+    opacity: calc(0.26 * var(--ll-glow-intensity, 1));
+    background: radial-gradient(closest-side, var(--color-seal-500) 0%, transparent 70%);
+  }
+
+  @media (min-width: 768px) {
+    .ll-glow-primary {
+      filter: blur(120px);
+      opacity: calc(0.5 * var(--ll-glow-intensity, 1));
+    }
+    .ll-glow-secondary {
+      filter: blur(110px);
+      opacity: calc(0.4 * var(--ll-glow-intensity, 1));
+    }
+  }
+
+  /* Hairlines ------------------------------------------------------------ */
+  .ll-rule {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--color-ink-50) 14%, transparent) 22%,
+      color-mix(in oklab, var(--color-ink-50) 14%, transparent) 78%,
+      transparent
+    );
+  }
+}
+
+@layer utilities {
+  /* Film grain — keeps the big gradients from banding */
+  .ll-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+  }
+
+  .ll-grid-lines {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--color-ink-50) 4%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--color-ink-50) 4%, transparent) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .ll-fade-edges {
+    mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+  }
+
+  .ll-fade-bottom {
+    mask-image: linear-gradient(180deg, black 55%, transparent);
+  }
+
+  @keyframes ll-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  .ll-marquee {
+    animation: ll-marquee 42s linear infinite;
+  }
+
+  @keyframes ll-drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(2%, -3%, 0) scale(1.08);
+    }
+  }
+  .ll-drift {
+    animation: ll-drift 18s ease-in-out infinite;
+  }
+
+  @keyframes ll-sheen {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
