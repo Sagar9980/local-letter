@@ -17,7 +17,10 @@ export function createApp() {
 
   app.all("/api/auth/*", toNodeHandler(auth));
 
-  app.use(express.json());
+  // A saved template carries both the inlined HTML and the editor's full
+  // designJson, which together already run to ~95% of body-parser's 100kb
+  // default. One more image block would start failing saves with an opaque 413.
+  app.use(express.json({ limit: "5mb" }));
 
   app.use(router);
 

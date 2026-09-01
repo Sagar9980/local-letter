@@ -34,6 +34,25 @@ import {
 
 const BLANK = "__blank__"
 
+// GrapesJS keeps components and styles in two separate stores, so getHtml()
+// on its own returns markup carrying class names and no styling at all. The
+// newsletter preset's inline command joins the two and runs them through juice,
+// pushing every rule it can down into `style=""` attributes — the only form
+// most email clients reliably honour. Whatever juice can't inline (media
+// queries, pseudo-selectors) it leaves behind in a <style> block.
+function exportHtml(editor: Editor): string {
+  const inlined = editor.runCommand("gjs-get-inlined-html", {
+    juiceOpts: { preserveMediaQueries: true, preserveFontFaces: true },
+  })
+  if (typeof inlined === "string" && inlined.trim()) return inlined
+
+  // The command comes from the preset, so fall back to an un-inlined <style>
+  // block rather than silently saving another styleless template.
+  const html = editor.getHtml()
+  const css = editor.getCss()
+  return css ? `${html}<style>${css}</style>` : html
+}
+
 export function TemplateEditorPage() {
   const navigate = useNavigate()
   const project = useCurrentProject()
@@ -168,7 +187,7 @@ export function TemplateEditorPage() {
     setError(null)
 
     try {
-      const htmlBody = editor.getHtml()
+      const htmlBody = exportHtml(editor)
       const designJson = editor.getProjectData()
 
       const saved = await apiFetch<TemplateLocale>(
@@ -261,7 +280,9 @@ export function TemplateEditorPage() {
     const editor = editorRef.current
     if (!editor) return
 
-    const html = `<!doctype html><html><head><meta charset="utf-8"></head><body>${editor.getHtml()}</body></html>`
+    // Deliberately the same output that handleSave persists, so the preview
+    // shows what recipients get rather than a prettier in-editor rendering.
+    const html = `<!doctype html><html><head><meta charset="utf-8"></head>${exportHtml(editor)}</html>`
     const blob = new Blob([html], { type: "text/html" })
     const url = URL.createObjectURL(blob)
     window.open(url, "_blank", "noopener,noreferrer")
