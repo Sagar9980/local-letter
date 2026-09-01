@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@local-letter/site", "dev"],
       "port": 5174
+    },
+    {
+      "name": "example-node",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["examples/node/server.js"],
+      "port": 3000
     }
   ]
 }
