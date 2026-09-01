@@ -9,9 +9,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        // The wax-seal gradient from the marketing site: a lit top edge, a
+        // warm shadow underneath, so the primary action reads as a physical
+        // stamp rather than a flat fill.
+        default:
+          "bg-linear-to-b from-ember-300 to-ember-500 text-ember-ink shadow-[inset_0_1px_0_0_rgb(255_255_255/0.45),inset_0_-1px_0_0_rgb(0_0_0/0.14),0_8px_24px_-12px_color-mix(in_oklab,var(--color-ember-500)_75%,transparent)] hover:from-ember-200 hover:to-ember-400 hover:shadow-[inset_0_1px_0_0_rgb(255_255_255/0.6),inset_0_-1px_0_0_rgb(0_0_0/0.14),0_12px_32px_-12px_color-mix(in_oklab,var(--color-ember-500)_90%,transparent)]",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border-input bg-ink-50/4 hover:bg-ink-50/9 hover:text-foreground aria-expanded:bg-ink-50/9 aria-expanded:text-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
