@@ -32,7 +32,7 @@ export default function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="relative scroll-mt-24 overflow-hidden border-y border-ink-50/8 bg-ink-900/30 py-24 sm:py-32"
+      className="relative scroll-mt-32 overflow-hidden border-y border-ink-50/8 bg-ink-900/30 py-24 sm:py-32"
     >
       <div className="ll-shell">
         <Reveal className="max-w-2xl">

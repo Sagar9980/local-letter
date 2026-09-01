@@ -40,7 +40,7 @@ export default function FinalCta() {
           </div>
 
           <p className="mt-6 text-[0.8125rem] text-ink-500">
-            Self-hosted from day one · No usage metering · MIT licensed core
+            Free to self-host · MIT licensed · Cloud coming soon
           </p>
         </Reveal>
       </div>

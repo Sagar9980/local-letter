@@ -8,7 +8,7 @@ export const site = {
     { label: 'Features', href: '/#features' },
     { label: 'How it works', href: '/#how-it-works' },
     { label: 'SDK', href: '/#sdk' },
-    { label: 'Self-hosting', href: '/#self-host' },
+    { label: 'Pricing', href: '/pricing' },
   ],
 } as const
 
