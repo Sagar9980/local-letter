@@ -12,7 +12,7 @@ assumes Node, and `examples/` itself holds no build artefacts:
 
 ```
 examples/
-  node/       Node 20+ / Express      (@local-letter/sdk)
+  node/       Node 20+ / Express      (local-letter)
   python/     (planned)
   go/         (planned)
 ```

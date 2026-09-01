@@ -6,7 +6,7 @@
  *
  * Everything else comes from .env — see .env.example.
  */
-import { TemplateRenderError, TemplateSendError } from "@local-letter/sdk";
+import { TemplateRenderError, TemplateSendError } from "local-letter";
 import { createClient, loadConfig } from "./lib/client.js";
 
 const config = loadConfig({ requireRecipient: !process.argv[2] });

@@ -8,20 +8,17 @@ importers:
 
   .:
     dependencies:
-      '@local-letter/sdk':
-        specifier: file:../../packages/sdk
-        version: file:../../packages/sdk(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
       express:
         specifier: ^4.21.2
         version: 4.22.2
+      local-letter:
+        specifier: file:../../packages/sdk
+        version: file:../../packages/sdk(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
 
 packages:
-
-  '@local-letter/sdk@file:../../packages/sdk':
-    resolution: {directory: ../../packages/sdk, type: directory}
 
   '@react-email/render@1.1.2':
     resolution: {integrity: sha512-RnRehYN3v9gVlNMehHPHhyp2RQo7+pSkHDtXPvg3s0GbzM9SQMW4Qrf8GRNvtpLC4gsI+Wt0VatNRUFqjvevbw==}
@@ -209,6 +206,10 @@ packages:
   leac@0.6.0:
     resolution: {integrity: sha512-y+SqErxb8h7nE/fiEX07jsbuhrpO9lL8eca7/Y1nuWV2moNlXhyd59iDGcRf6moVyDMbmTNzL40SUyrFU/yDpg==}
 
+  local-letter@file:../../packages/sdk:
+    resolution: {directory: ../../packages/sdk, type: directory}
+    engines: {node: '>=18'}
+
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
@@ -369,13 +370,6 @@ packages:
     engines: {node: '>= 0.8'}
 
 snapshots:
-
-  '@local-letter/sdk@file:../../packages/sdk(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
-    dependencies:
-      resend: 4.8.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-    transitivePeerDependencies:
-      - react
-      - react-dom
 
   '@react-email/render@1.1.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
@@ -604,6 +598,13 @@ snapshots:
   ipaddr.js@1.9.1: {}
 
   leac@0.6.0: {}
+
+  local-letter@file:../../packages/sdk(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+    dependencies:
+      resend: 4.8.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+    transitivePeerDependencies:
+      - react
+      - react-dom
 
   math-intrinsics@1.1.0: {}
 

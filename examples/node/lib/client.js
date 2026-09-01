@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { TemplateClient } from "@local-letter/sdk";
+import { TemplateClient } from "local-letter";
 
 // Resolved relative to this file rather than process.cwd(), so the example
 // still finds its .env when started from the repo root.

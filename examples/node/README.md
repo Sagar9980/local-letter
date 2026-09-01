@@ -1,6 +1,6 @@
 # Node / Express example
 
-Uses `@local-letter/sdk` from a plain Node app. Installed via
+Uses `local-letter` from a plain Node app. Installed via
 `file:../../packages/sdk`, so it consumes the package's built `dist/` the same
 way an npm install would — if the build output or entry points are wrong, this
 example is where you'll find out.
@@ -9,7 +9,7 @@ example is where you'll find out.
 
 ```bash
 # from the repo root, build the SDK first
-pnpm --filter @local-letter/sdk build
+pnpm --filter local-letter build
 
 cd examples/node
 cp .env.example .env   # then fill in the two API keys and TEST_TO

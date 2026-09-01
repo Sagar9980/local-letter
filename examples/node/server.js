@@ -9,7 +9,7 @@
  *     -d '{"email":"you@example.com","name":"Sagar"}'
  */
 import express from "express";
-import { TemplateRenderError, TemplateSendError } from "@local-letter/sdk";
+import { TemplateRenderError, TemplateSendError } from "local-letter";
 import { createClient, loadConfig } from "./lib/client.js";
 
 const config = loadConfig();

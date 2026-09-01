@@ -22,8 +22,8 @@ const sdks: Sdk[] = [
     id: 'node',
     label: 'Node.js',
     status: 'available',
-    install: 'pnpm add @local-letter/sdk',
-    code: `import { TemplateClient } from "@local-letter/sdk";
+    install: 'pnpm add local-letter',
+    code: `import { TemplateClient } from "local-letter";
 
 const letters = new TemplateClient({
   baseUrl: process.env.LOCAL_LETTER_URL,
