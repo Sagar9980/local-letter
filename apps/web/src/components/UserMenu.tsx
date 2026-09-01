@@ -38,15 +38,17 @@ export function UserMenu({ trigger, side = "bottom", align = "end" }: UserMenuPr
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{trigger({ name, email, initials })}</DropdownMenuTrigger>
-      <DropdownMenuContent className="min-w-56" side={side} align={align}>
+      <DropdownMenuContent className="min-w-60 rounded-xl" side={side} align={align} sideOffset={6}>
         <DropdownMenuLabel className="p-0 font-normal">
-          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <Avatar className="size-8 rounded-lg">
-              <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+          <div className="flex items-center gap-2.5 px-1 py-1.5 text-left">
+            <Avatar className="size-9 rounded-xl">
+              <AvatarFallback className="rounded-xl bg-linear-to-br from-ember-300 to-ember-500 text-xs font-medium text-ember-ink">
+                {initials}
+              </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{name || "Account"}</span>
-              <span className="truncate text-xs text-muted-foreground">{email}</span>
+            <div className="grid flex-1 leading-tight">
+              <span className="truncate text-sm font-medium text-ink-50">{name || "Account"}</span>
+              <span className="truncate text-[0.6875rem] text-ink-500">{email}</span>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -54,13 +56,18 @@ export function UserMenu({ trigger, side = "bottom", align = "end" }: UserMenuPr
         <DropdownMenuItem disabled>
           <User />
           Profile
+          <span className="ml-auto text-[0.625rem] tracking-wide text-ink-700 uppercase">Soon</span>
         </DropdownMenuItem>
         <DropdownMenuItem disabled>
           <Settings />
           Settings
+          <span className="ml-auto text-[0.625rem] tracking-wide text-ink-700 uppercase">Soon</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={handleSignOut}>
+        <DropdownMenuItem
+          onSelect={handleSignOut}
+          className="text-seal-400 focus:bg-seal-500/10 focus:text-seal-400"
+        >
           <LogOut />
           Log out
         </DropdownMenuItem>

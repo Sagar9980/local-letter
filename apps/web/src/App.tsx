@@ -1,11 +1,11 @@
 import { lazy, Suspense } from "react";
-import { Loader2 } from "lucide-react";
 import {
   createBrowserRouter,
   Navigate,
   RouterProvider,
 } from "react-router-dom";
 import { useSession } from "@/lib/auth-client";
+import { BrandedLoader } from "@/components/BrandedLoader";
 import { RequireAuth } from "@/routes/RequireAuth";
 import { RedirectIfAuthed } from "@/routes/RedirectIfAuthed";
 import { LoginPage } from "@/pages/LoginPage";
@@ -26,22 +26,14 @@ const TemplateEditorPage = lazy(() =>
 );
 
 function EditorFallback() {
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <Loader2 className="size-5 animate-spin text-muted-foreground" />
-    </div>
-  );
+  return <BrandedLoader label="Loading the editor" />;
 }
 
 function RootRedirect() {
   const { data: session, isPending } = useSession();
 
   if (isPending) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <BrandedLoader />;
   }
 
   return <Navigate to={session ? "/projects" : "/login"} replace />;

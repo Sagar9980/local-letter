@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import { Loader2 } from "lucide-react"
 import { Navigate, Outlet, useParams } from "react-router-dom"
 import { apiFetch } from "@/lib/api"
 import { ProjectContextProvider, type Project } from "@/lib/project-context"
+import { BrandedLoader } from "@/components/BrandedLoader"
 
 export function ProjectProvider() {
   const { slug } = useParams<{ slug: string }>()
@@ -32,11 +32,7 @@ export function ProjectProvider() {
   }
 
   if (!project) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <BrandedLoader label="Opening project" />
   }
 
   return (

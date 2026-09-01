@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react"
 import type { FormEvent } from "react"
-import { Check, Copy, KeySquare, Plus, Trash2 } from "lucide-react"
+import { AlertTriangle, Check, Copy, KeySquare, Plus, Trash2 } from "lucide-react"
 import { useCurrentProject } from "@/lib/project-context"
 import { apiFetch } from "@/lib/api"
 import type { ApiKeyCreated, ApiKeySummary } from "@/lib/api-keys"
+import { cn } from "@/lib/utils"
+import { PageHeader } from "@/components/dashboard/PageHeader"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -21,6 +22,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -94,144 +96,195 @@ export function ApiKeysPage() {
     }
   }
 
+  const newKeyDialog = (
+    <Dialog open={isDialogOpen} onOpenChange={closeDialog}>
+      <DialogTrigger asChild>
+        <Button className="h-9 rounded-full px-4">
+          <Plus />
+          New API key
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="rounded-2xl">
+        {createdKey ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>API key created</DialogTitle>
+              <DialogDescription>
+                Store it in your server environment as{" "}
+                <span className="font-mono text-ink-100">LOCAL_LETTER_API_KEY</span>.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start gap-2.5 rounded-xl bg-ember-400/8 px-3.5 py-3 text-[0.8125rem] leading-relaxed text-ember-200 ring-1 ring-ember-400/20">
+                <AlertTriangle className="mt-px size-4 shrink-0" />
+                <span>Copy it now — this is the only time the full key is shown.</span>
+              </div>
+              <div className="flex items-center gap-2 rounded-xl bg-ink-950/60 px-3 py-2.5 ring-1 ring-ink-50/8">
+                <span className="flex-1 truncate font-mono text-[0.8125rem] text-ink-100">
+                  {createdKey.key}
+                </span>
+                <Button type="button" variant="ghost" size="icon-sm" onClick={handleCopy}>
+                  {copied ? <Check className="text-ember-300" /> : <Copy />}
+                </Button>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button className="h-9 rounded-full px-4" onClick={() => closeDialog(false)}>
+                Done
+              </Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>New API key</DialogTitle>
+              <DialogDescription>
+                Name it after where it runs, so revoking the right one later is obvious.
+              </DialogDescription>
+            </DialogHeader>
+            <form className="flex flex-col gap-4" onSubmit={handleCreate}>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="api-key-name">Name</Label>
+                <Input
+                  id="api-key-name"
+                  className="h-10 rounded-xl"
+                  placeholder="Production server"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoFocus
+                  required
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => closeDialog(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="h-9 rounded-full px-4">
+                  {isSubmitting ? "Creating…" : "Create key"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-6">
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">API Keys</h1>
-            <p className="text-sm text-muted-foreground">
-              Keys used by the SDK to render templates from {project.name}.
+    <div className="h-full overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-7 p-5 md:p-8">
+        <PageHeader
+          eyebrow="Access"
+          title="API keys"
+          description={`Keys the SDK uses to render and send templates from ${project.name}. Keep them server-side.`}
+          action={newKeyDialog}
+        />
+
+        <section className="ll-panel overflow-hidden rounded-2xl">
+          <div className="flex items-center justify-between gap-3 border-b border-ink-50/8 px-4 py-3">
+            <h2 className="text-sm font-medium text-ink-50">Keys</h2>
+            <p className="text-[0.8125rem] text-ink-500">
+              {keys?.length ?? 0} key{keys?.length === 1 ? "" : "s"}
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={closeDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus />
-                New API Key
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              {createdKey ? (
-                <>
-                  <DialogHeader>
-                    <DialogTitle>API key created</DialogTitle>
-                  </DialogHeader>
-                  <div className="flex flex-col gap-3">
-                    <p className="text-sm text-muted-foreground">
-                      Copy this key now — you won't be able to see it again.
-                    </p>
-                    <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2 font-mono text-sm">
-                      <span className="flex-1 truncate">{createdKey.key}</span>
-                      <Button type="button" variant="ghost" size="icon" onClick={handleCopy}>
-                        {copied ? <Check className="text-green-600" /> : <Copy />}
-                      </Button>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button onClick={() => closeDialog(false)}>Done</Button>
-                  </DialogFooter>
-                </>
-              ) : (
-                <>
-                  <DialogHeader>
-                    <DialogTitle>New API Key</DialogTitle>
-                  </DialogHeader>
-                  <form className="flex flex-col gap-4" onSubmit={handleCreate}>
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="api-key-name">Name</Label>
-                      <Input
-                        id="api-key-name"
-                        placeholder="e.g. Production server"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        autoFocus
-                        required
-                      />
-                    </div>
-                    {error && <p className="text-sm text-destructive">{error}</p>}
-                    <DialogFooter>
-                      <Button type="button" variant="outline" onClick={() => closeDialog(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Creating..." : "Create"}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </>
-              )}
-            </DialogContent>
-          </Dialog>
-        </div>
 
-        <Card>
-          <CardHeader>
-            <p className="text-sm font-medium">Keys</p>
-          </CardHeader>
-          <CardContent>
-            {keys === null ? (
-              <div className="flex flex-col gap-3">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
+          {keys === null ? (
+            <div className="flex flex-col gap-3 p-4">
+              <Skeleton className="h-12 w-full rounded-lg bg-ink-50/6" />
+              <Skeleton className="h-12 w-full rounded-lg bg-ink-50/6" />
+            </div>
+          ) : keys.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 px-5 py-16 text-center">
+              <div className="grid size-12 place-items-center rounded-2xl bg-ember-400/10 ring-1 ring-ember-400/20">
+                <KeySquare className="size-5 text-ember-300" />
               </div>
-            ) : keys.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 py-12 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-                  <KeySquare className="size-6 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium">No API keys yet</p>
-                  <p className="text-sm text-muted-foreground">
-                    Create one to let the SDK render templates from this project.
-                  </p>
-                </div>
+              <div className="max-w-sm">
+                <p className="font-medium text-ink-50">No API keys yet</p>
+                <p className="mt-1 text-sm leading-relaxed text-ink-300">
+                  Create one to let your backend render templates from this project.
+                </p>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Key</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="w-10" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {keys.map((key) => (
-                      <TableRow key={key.id}>
-                        <TableCell className="font-medium">{key.name || "Untitled"}</TableCell>
-                        <TableCell className="font-mono text-muted-foreground">
-                          {key.prefix ?? key.start ?? "••••••••"}···
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={key.enabled ? "default" : "secondary"}>
-                            {key.enabled ? "active" : "revoked"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {new Date(key.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRevoke(key.id)}
-                          >
-                            <Trash2 className="text-destructive" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              <Button className="h-9 rounded-full px-4" onClick={() => setIsDialogOpen(true)}>
+                <Plus />
+                New API key
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="border-ink-50/8 hover:bg-transparent">
+                  <TableHead className="px-4 text-[0.6875rem] tracking-[0.1em] text-ink-500 uppercase">
+                    Name
+                  </TableHead>
+                  <TableHead className="text-[0.6875rem] tracking-[0.1em] text-ink-500 uppercase">
+                    Key
+                  </TableHead>
+                  <TableHead className="text-[0.6875rem] tracking-[0.1em] text-ink-500 uppercase">
+                    Status
+                  </TableHead>
+                  <TableHead className="hidden text-[0.6875rem] tracking-[0.1em] text-ink-500 uppercase sm:table-cell">
+                    Last used
+                  </TableHead>
+                  <TableHead className="hidden text-[0.6875rem] tracking-[0.1em] text-ink-500 uppercase sm:table-cell">
+                    Created
+                  </TableHead>
+                  <TableHead className="w-10" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {keys.map((key) => (
+                  <TableRow key={key.id} className="border-ink-50/6 hover:bg-ink-50/4">
+                    <TableCell className="px-4 py-3 font-medium text-ink-100">
+                      {key.name || "Untitled"}
+                    </TableCell>
+                    <TableCell className="font-mono text-[0.8125rem] text-ink-500">
+                      {key.prefix ?? key.start ?? "••••••••"}
+                      <span className="text-ink-700">···</span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "shrink-0 gap-1.5 rounded-full text-[0.6875rem] font-normal",
+                          key.enabled
+                            ? "border-ember-400/25 bg-ember-400/10 text-ember-200"
+                            : "border-seal-500/25 bg-seal-500/10 text-seal-400",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "size-1.5 rounded-full",
+                            key.enabled ? "bg-ember-400" : "bg-seal-500",
+                          )}
+                        />
+                        {key.enabled ? "active" : "revoked"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden text-ink-500 sm:table-cell">
+                      {key.lastRequest ? new Date(key.lastRequest).toLocaleDateString() : "Never"}
+                    </TableCell>
+                    <TableCell className="hidden text-ink-500 sm:table-cell">
+                      {new Date(key.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="pr-4">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Revoke ${key.name || "key"}`}
+                        onClick={() => handleRevoke(key.id)}
+                        className="text-ink-500 hover:bg-seal-500/10 hover:text-seal-400"
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </section>
       </div>
     </div>
   )
