@@ -1,0 +1,5 @@
+# pnpm walks up the tree looking for a workspace root, and would otherwise find
+# the repo's own — installing here would reinstall the whole monorepo. This
+# empty root stops that walk, so node_modules and the lockfile stay in this
+# folder and `examples/` remains package-manager-neutral.
+packages: []

@@ -1,0 +1,20 @@
+{
+  "name": "local-letter-example-node",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Express/Node integration example for the local-letter SDK.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "quickstart": "node quickstart.js",
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@local-letter/sdk": "file:../../packages/sdk",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
