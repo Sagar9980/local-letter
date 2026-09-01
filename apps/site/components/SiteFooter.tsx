@@ -11,6 +11,8 @@ const columns = [
       { label: 'How it works', href: '/#how-it-works' },
       { label: 'SDK', href: '/#sdk' },
       { label: 'Self-hosting', href: '/#self-host' },
+      { label: 'Pricing', to: '/pricing' },
+      { label: 'Local Letter Cloud', to: '/pricing', note: 'Soon' },
     ],
   },
   {

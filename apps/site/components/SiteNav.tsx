@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ArrowUpRight, Menu, X } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Menu, X } from 'lucide-react'
 import { Wordmark } from '@/components/Logo'
 import { site } from '@/lib/site'
 import { cn } from '@/lib/utils'
@@ -32,6 +32,7 @@ export default function SiteNav() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
+      <CloudBanner />
       <div
         className={cn(
           'transition-[background-color,box-shadow,backdrop-filter] duration-300',
@@ -130,5 +131,30 @@ export default function SiteNav() {
         </div>
       ) : null}
     </header>
+  )
+}
+
+/**
+ * Site-wide announcement strip. Sits inside the fixed header so it scrolls
+ * with the nav rather than leaving a gap at the top of every page.
+ */
+function CloudBanner() {
+  return (
+    <Link
+      href="/pricing"
+      className="group block border-b border-ember-400/15 bg-ink-950/80 backdrop-blur-xl transition-colors duration-200 hover:bg-ink-900/80"
+    >
+      <div className="ll-shell flex min-h-9 items-center justify-center gap-2 py-1.5 text-center">
+        <span className="hidden size-1.5 shrink-0 rounded-full bg-ember-400 sm:inline-flex" />
+        <span className="text-[0.75rem] text-ink-100">
+          <span className="font-medium text-ember-200">Local Letter Cloud</span> is coming soon
+          <span className="hidden sm:inline"> — fully managed, nothing to run yourself.</span>
+        </span>
+        <span className="hidden items-center gap-1 text-[0.75rem] text-ember-300 sm:inline-flex">
+          Join the waitlist
+          <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </span>
+      </div>
+    </Link>
   )
 }

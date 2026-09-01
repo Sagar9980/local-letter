@@ -17,6 +17,7 @@ const CONTACT_ENDPOINT = process.env.NEXT_PUBLIC_CONTACT_ENDPOINT as string | un
 
 const localeRanges = ['1–2 locales', '3–5 locales', '6–15 locales', '15+ locales']
 const interests = [
+  'Local Letter Cloud waitlist',
   'Self-hosted deployment',
   'Migrating existing templates',
   'An SDK for another language',
@@ -109,9 +110,9 @@ export default function ContactPage() {
               <span className="ll-serif ll-gradient-text">who built it</span>
             </h1>
             <p className="mt-6 max-w-md text-[1.0625rem] leading-relaxed text-ink-300">
-              We do not publish a price list. Deployments differ enough — locales, team size,
-              support expectations, migration help — that a table would give you the wrong
-              number. Tell us what you are running and we will come back with a real plan.
+              Self-hosting is free — you do not need us to start. Get in touch if you want on
+              the Local Letter Cloud waitlist, need help migrating existing templates, or have a
+              security review to get through. Tell us what you are running and who it is for.
             </p>
 
             <div className="mt-10 space-y-5">

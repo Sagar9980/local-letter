@@ -132,11 +132,11 @@ export default function SdkSection() {
   return (
     <section
       id="sdk"
-      className="relative scroll-mt-24 overflow-hidden border-y border-ink-50/8 bg-ink-900/30 py-24 sm:py-32"
+      className="relative scroll-mt-32 overflow-hidden border-y border-ink-50/8 bg-ink-900/30 py-24 sm:py-32"
     >
       <div className="ll-shell">
         <div className="grid gap-12 [&>*]:min-w-0 lg:grid-cols-[0.8fr_1fr] lg:items-start">
-          <Reveal className="lg:sticky lg:top-28">
+          <Reveal className="lg:sticky lg:top-36">
             <p className="ll-eyebrow">Built for your codebase</p>
             <h2 className="ll-h2 mt-4 text-ink-50">
               One call.

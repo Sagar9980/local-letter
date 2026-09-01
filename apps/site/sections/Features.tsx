@@ -59,7 +59,7 @@ const pillars = [
 
 export default function Features() {
   return (
-    <section id="features" className="relative scroll-mt-24 py-24 sm:py-32">
+    <section id="features" className="relative scroll-mt-32 py-24 sm:py-32">
       <div className="ll-shell">
         <Reveal className="max-w-2xl">
           <p className="ll-eyebrow">Everything in the box</p>

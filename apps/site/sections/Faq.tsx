@@ -33,8 +33,12 @@ const faqs = [
     a: 'Full documentation is being written and will land at /docs. In the meantime, contact sales and we will walk your team through deployment, template modelling and SDK integration directly.',
   },
   {
-    q: 'How do I get pricing?',
-    a: 'Talk to sales. Deployments differ enough — team size, locales, support expectations, whether you want help with the initial migration — that a table on a website would tell you the wrong number.',
+    q: 'What does it cost?',
+    a: 'Self-hosting is free and MIT licensed — unlimited templates, locales and sends, with no seat counts and no feature gates. Local Letter Cloud, the managed version, is coming soon and its pricing will be published at launch.',
+  },
+  {
+    q: 'What is Local Letter Cloud?',
+    a: 'The same platform, run by us, for teams who would rather not own the Postgres, the upgrades or the on-call. It adds managed hosting, regional data residency, SSO, audit logs and SLA-backed support on top of everything the open source version already does. Join the waitlist and we will bring you in before general availability.',
   },
 ]
 

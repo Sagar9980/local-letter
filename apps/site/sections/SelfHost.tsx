@@ -45,7 +45,7 @@ const compose = `services:
 
 export default function SelfHost() {
   return (
-    <section id="self-host" className="relative scroll-mt-24 overflow-hidden py-24 sm:py-32">
+    <section id="self-host" className="relative scroll-mt-32 overflow-hidden py-24 sm:py-32">
       <div className="ll-shell">
         <div className="grid gap-14 [&>*]:min-w-0 lg:grid-cols-[1fr_0.9fr] lg:items-center">
           <Reveal>
@@ -57,8 +57,8 @@ export default function SelfHost() {
             </h2>
             <p className="mt-5 max-w-lg text-[1.0625rem] leading-relaxed text-ink-300">
               Local Letter is a Docker Compose stack you run yourself: an Express API, a React
-              dashboard and a Postgres database. There is no hosted tier quietly holding your
-              customer data.
+              dashboard and a Postgres database. Self-hosting is free and always will be — Cloud,
+              when it lands, is something you opt into, not something you get moved onto.
             </p>
 
             <RevealGroup className="mt-10 grid gap-5 sm:grid-cols-2">
