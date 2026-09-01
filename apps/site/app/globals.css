@@ -317,6 +317,16 @@
     background-size: 64px 64px;
   }
 
+  /* Horizontal rails scroll on phones; the cut-off card is the affordance,
+     so the bar itself is just noise. */
+  .ll-no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .ll-no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .ll-fade-edges {
     mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
   }

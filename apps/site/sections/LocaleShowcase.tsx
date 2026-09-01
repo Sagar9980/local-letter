@@ -5,11 +5,18 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Reveal } from '@/components/Reveal'
 import AppFrame from '@/components/AppFrame'
 import EmailPreview from '@/components/EmailPreview'
-import { localeSamples } from '@/lib/locales'
+import {
+  localeMeta,
+  resolveVariant,
+  templateByKey,
+  type LocaleCode,
+} from '@/lib/templates'
 
 export default function LocaleShowcase() {
-  const [active, setActive] = useState(localeSamples[0].code)
-  const sample = localeSamples.find((item) => item.code === active) ?? localeSamples[0]
+  const template = templateByKey('welcome-email')
+  const [active, setActive] = useState<LocaleCode>('en')
+  const { variant, fellBack } = resolveVariant(template, active)
+  const requested = localeMeta[active]
 
   return (
     <section className="relative overflow-hidden py-24 sm:py-32">
@@ -30,7 +37,7 @@ export default function LocaleShowcase() {
 
             <div className="mt-8 rounded-2xl bg-ink-900/50 p-1.5 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ink-50)_7%,transparent)]">
               <div className="flex flex-wrap gap-1.5">
-                {localeSamples.map((item) => {
+                {template.variants.map((item) => {
                   const isActive = item.code === active
                   return (
                     <button
@@ -48,10 +55,10 @@ export default function LocaleShowcase() {
                         />
                       ) : null}
                       <span className="relative" aria-hidden="true">
-                        {item.flag}
+                        {localeMeta[item.code].flag}
                       </span>
                       <span className={isActive ? 'relative text-ember-200' : 'relative text-ink-300'}>
-                        {item.label}
+                        {localeMeta[item.code].label}
                       </span>
                       {item.status === 'draft' ? (
                         <span className="relative rounded-full bg-ink-50/8 px-1.5 py-0.5 text-[0.5625rem] uppercase tracking-wide text-ink-500">
@@ -66,16 +73,16 @@ export default function LocaleShowcase() {
 
             <AnimatePresence mode="wait">
               <motion.p
-                key={sample.code}
+                key={`${active}-${fellBack}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.22 }}
                 className="mt-5 text-[0.8125rem] text-ink-500"
               >
-                {sample.status === 'draft'
-                  ? `“${sample.label}” is still a draft — a production render would fall back to English.`
-                  : `Requesting locale “${sample.code}” returns this published variant directly.`}
+                {fellBack
+                  ? `“${requested.label}” is still a draft — the render falls back to “${variant.code}”.`
+                  : `Requesting locale “${variant.code}” returns this published variant directly.`}
               </motion.p>
             </AnimatePresence>
           </Reveal>
@@ -90,10 +97,15 @@ export default function LocaleShowcase() {
                 }}
                 aria-hidden="true"
               />
-              <AppFrame label={`POST /v1/render/welcome-email · locale=${sample.code}`}>
+              <AppFrame label={`POST /v1/render/${template.key} · locale=${active}`}>
                 <div className="p-4 sm:p-5">
                   <AnimatePresence mode="wait">
-                    <EmailPreview key={sample.code} animateKey={sample.code} sample={sample} />
+                    <EmailPreview
+                      key={variant.code}
+                      animateKey={variant.code}
+                      template={template}
+                      variant={variant}
+                    />
                   </AnimatePresence>
 
                   <div className="mt-4 rounded-2xl bg-ink-950/60 p-4 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ink-50)_6%,transparent)]">
@@ -102,8 +114,8 @@ export default function LocaleShowcase() {
                     </p>
                     <pre className="mt-2.5 overflow-x-auto font-mono text-[0.7rem] leading-relaxed text-ink-300">
 {`{
-  "locale":  "${sample.status === 'draft' ? 'en' : sample.code}",
-  "subject": "${sample.status === 'draft' ? localeSamples[0].subject : sample.subject}",
+  "locale":  "${variant.code}",
+  "subject": "${variant.subject}",
   "html":    "<!doctype html>…"
 }`}
                     </pre>
