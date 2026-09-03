@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { FormEvent } from "react"
-import { FileText, Plus } from "lucide-react"
+import { FileText, Library, Plus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useCurrentProject } from "@/lib/project-context"
 import { apiFetch } from "@/lib/api"
@@ -93,6 +93,14 @@ export function TemplatesPage() {
             Email templates for {project.name}. Use {"{{variable}}"} for dynamic values.
           </p>
         </div>
+        <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          onClick={() => navigate(`/projects/${project.slug}/library`)}
+        >
+          <Library />
+          Template library
+        </Button>
         <Dialog
           open={isDialogOpen}
           onOpenChange={(open) => {
@@ -137,6 +145,7 @@ export function TemplatesPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card>
@@ -172,9 +181,18 @@ export function TemplatesPage() {
                 <p className="text-sm text-muted-foreground">
                   {status !== "all"
                     ? "Try adjusting your filter."
-                    : "Create your first email template to get started."}
+                    : "Install a themed pack from the library, or start from a blank canvas."}
                 </p>
               </div>
+              {status === "all" && (
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/projects/${project.slug}/library`)}
+                >
+                  <Library />
+                  Browse the template library
+                </Button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">

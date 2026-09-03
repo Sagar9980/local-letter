@@ -15,6 +15,7 @@ import { ProjectProvider } from "@/components/dashboard/ProjectProvider";
 import { ProjectLayout } from "@/components/dashboard/ProjectLayout";
 import { ProjectOverviewPage } from "@/pages/ProjectOverviewPage";
 import { TemplatesPage } from "@/pages/TemplatesPage";
+import { TemplateLibraryPage } from "@/pages/TemplateLibraryPage";
 import { ApiKeysPage } from "@/pages/ApiKeysPage";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -69,6 +70,8 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <ProjectOverviewPage /> },
               { path: "templates", element: <TemplatesPage /> },
+              { path: "library", element: <TemplateLibraryPage /> },
+              { path: "library/:packId", element: <TemplateLibraryPage /> },
               { path: "api-keys", element: <ApiKeysPage /> },
             ],
           },

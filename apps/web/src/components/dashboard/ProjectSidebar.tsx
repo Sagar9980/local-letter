@@ -1,4 +1,4 @@
-import { ChevronsUpDown, FolderKanban, KeySquare, LayoutTemplate } from "lucide-react"
+import { ChevronsUpDown, FolderKanban, KeySquare, LayoutTemplate, Library } from "lucide-react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { useCurrentProject } from "@/lib/project-context"
 import { useProjects } from "@/hooks/useProjects"
@@ -27,6 +27,7 @@ import {
 const navItems = [
   { label: "Overview", segment: "", icon: FolderKanban, disabled: false },
   { label: "Templates", segment: "templates", icon: LayoutTemplate, disabled: false },
+  { label: "Library", segment: "library", icon: Library, disabled: false },
   { label: "API Keys", segment: "api-keys", icon: KeySquare, disabled: false },
 ]
 
