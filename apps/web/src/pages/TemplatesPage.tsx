@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import type { FormEvent } from "react"
-import { ChevronRight, LayoutTemplate, Plus, Search } from "lucide-react"
+import { LayoutTemplate, Library, Plus, Search, Trash2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useCurrentProject } from "@/lib/project-context"
 import { apiFetch } from "@/lib/api"
@@ -37,6 +37,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { DeleteTemplateDialog } from "@/components/dashboard/DeleteTemplateDialog"
+import type { DeletableTemplate } from "@/components/dashboard/DeleteTemplateDialog"
 
 export function TemplatesPage() {
   const navigate = useNavigate()
@@ -45,6 +47,8 @@ export function TemplatesPage() {
   const [templates, setTemplates] = useState<TemplateSummary[] | null>(null)
   const [status, setStatus] = useState<string>("all")
   const [query, setQuery] = useState("")
+
+  const [pendingDelete, setPendingDelete] = useState<DeletableTemplate | null>(null)
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [name, setName] = useState("")
@@ -166,7 +170,19 @@ export function TemplatesPage() {
               time.
             </>
           }
-          action={newTemplateDialog}
+          action={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="h-9 rounded-full px-4"
+                onClick={() => navigate(`/projects/${project.slug}/library`)}
+              >
+                <Library />
+                Browse library
+              </Button>
+              {newTemplateDialog}
+            </div>
+          }
         />
 
         <section className="ll-panel overflow-hidden rounded-2xl">
@@ -216,14 +232,24 @@ export function TemplatesPage() {
                 <p className="mt-1 text-sm leading-relaxed text-ink-300">
                   {query || status !== "all"
                     ? "Try a different search or status."
-                    : "Create your first email template — design it once, translate it per locale."}
+                    : "Install a themed pack from the library, or start from a blank canvas."}
                 </p>
               </div>
               {!query && status === "all" && (
-                <Button className="h-9 rounded-full px-4" onClick={() => setIsDialogOpen(true)}>
-                  <Plus />
-                  New template
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-9 rounded-full px-4"
+                    onClick={() => navigate(`/projects/${project.slug}/library`)}
+                  >
+                    <Library />
+                    Browse the library
+                  </Button>
+                  <Button className="h-9 rounded-full px-4" onClick={() => setIsDialogOpen(true)}>
+                    <Plus />
+                    New template
+                  </Button>
+                </div>
               )}
             </div>
           ) : (
@@ -292,7 +318,23 @@ export function TemplatesPage() {
                       {new Date(template.updatedAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="pr-4">
-                      <ChevronRight className="size-3.5 text-ink-700 transition-all group-hover:translate-x-0.5 group-hover:text-ember-300" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Delete ${template.name}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setPendingDelete({
+                            key: template.key,
+                            name: template.name,
+                            localeCount: template.locales.length,
+                          })
+                        }}
+                        className="text-ink-500 hover:bg-seal-500/10 hover:text-seal-400"
+                      >
+                        <Trash2 />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -301,6 +343,15 @@ export function TemplatesPage() {
           )}
         </section>
       </div>
+
+      <DeleteTemplateDialog
+        projectSlug={project.slug}
+        template={pendingDelete}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        onDeleted={(deleted) =>
+          setTemplates((prev) => prev?.filter((t) => t.key !== deleted.key) ?? null)
+        }
+      />
     </div>
   )
 }

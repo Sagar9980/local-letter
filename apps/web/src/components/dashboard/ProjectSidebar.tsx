@@ -5,15 +5,16 @@ import {
   FolderKanban,
   KeySquare,
   LayoutTemplate,
+  Library,
   Plus,
-} from "lucide-react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useCurrentProject } from "@/lib/project-context"
-import { useProjects } from "@/hooks/useProjects"
-import { site } from "@/lib/site"
-import { cn } from "@/lib/utils"
-import { LogoMark } from "@/components/brand/Logo"
-import { UserMenu } from "@/components/UserMenu"
+} from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useCurrentProject } from "@/lib/project-context";
+import { useProjects } from "@/hooks/useProjects";
+import { site } from "@/lib/site";
+import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/brand/Logo";
+import { UserMenu } from "@/components/UserMenu";
 import {
   Sidebar,
   SidebarContent,
@@ -26,7 +27,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,29 +35,35 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { label: "Overview", segment: "", icon: FolderKanban },
-  { label: "Templates", segment: "templates", icon: LayoutTemplate },
-  { label: "API keys", segment: "api-keys", icon: KeySquare },
-]
+  { label: "Overview", segment: "", icon: FolderKanban, disabled: false },
+  {
+    label: "Templates",
+    segment: "templates",
+    icon: LayoutTemplate,
+    disabled: false,
+  },
+  { label: "Library", segment: "library", icon: Library, disabled: false },
+  { label: "API Keys", segment: "api-keys", icon: KeySquare, disabled: false },
+];
 
 function projectInitial(name: string) {
-  return name.slice(0, 1).toUpperCase() || "?"
+  return name.slice(0, 1).toUpperCase() || "?";
 }
 
 export function ProjectSidebar() {
-  const navigate = useNavigate()
-  const project = useCurrentProject()
-  const { projects } = useProjects()
-  const { state } = useSidebar()
-  const { pathname } = useLocation()
+  const navigate = useNavigate();
+  const project = useCurrentProject();
+  const { projects } = useProjects();
+  const { state } = useSidebar();
+  const { pathname } = useLocation();
 
   // /projects/:slug/<segment> — "" is the overview.
-  const currentSegment = pathname.split("/")[3] ?? ""
+  const currentSegment = pathname.split("/")[3] ?? "";
 
-  const collapsed = state === "collapsed"
+  const collapsed = state === "collapsed";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-ink-50/8">
@@ -119,7 +126,9 @@ export function ProjectSidebar() {
                       {projectInitial(p.name)}
                     </div>
                     <span className="flex-1 truncate">{p.name}</span>
-                    {p.id === project.id && <Check className="size-3.5 text-ember-300" />}
+                    {p.id === project.id && (
+                      <Check className="size-3.5 text-ember-300" />
+                    )}
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
@@ -141,7 +150,7 @@ export function ProjectSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
-                const isActive = currentSegment === item.segment
+                const isActive = currentSegment === item.segment;
                 return (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
@@ -164,7 +173,7 @@ export function ProjectSidebar() {
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                )
+                );
               })}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -177,7 +186,11 @@ export function ProjectSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="GitHub" className="text-ink-300">
+                <SidebarMenuButton
+                  asChild
+                  tooltip="GitHub"
+                  className="text-ink-300"
+                >
                   <a href={site.githubUrl} target="_blank" rel="noreferrer">
                     <ArrowUpRight />
                     <span>GitHub</span>
@@ -195,7 +208,10 @@ export function ProjectSidebar() {
             <UserMenu
               side="top"
               trigger={({ name, email, initials }) => (
-                <SidebarMenuButton size="lg" className="rounded-xl hover:bg-ink-50/6">
+                <SidebarMenuButton
+                  size="lg"
+                  className="rounded-xl hover:bg-ink-50/6"
+                >
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-ink-50/8 text-xs font-medium text-ink-100">
                     {initials}
                   </div>
@@ -203,7 +219,9 @@ export function ProjectSidebar() {
                     <span className="truncate text-sm font-medium text-ink-100">
                       {name || "Account"}
                     </span>
-                    <span className="truncate text-[0.6875rem] text-ink-500">{email}</span>
+                    <span className="truncate text-[0.6875rem] text-ink-500">
+                      {email}
+                    </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4 text-ink-500" />
                 </SidebarMenuButton>
@@ -213,5 +231,6 @@ export function ProjectSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
+

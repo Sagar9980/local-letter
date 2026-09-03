@@ -41,6 +41,15 @@ export async function getTemplate(req: Request, res: Response) {
   ApiResponse.success(res, template, { message: "Template fetched successfully" });
 }
 
+export async function deleteTemplate(req: Request, res: Response) {
+  const deleted = await templateService.deleteTemplate(
+    String(req.params.slug),
+    req.user!.id,
+    String(req.params.key),
+  );
+  ApiResponse.success(res, deleted, { message: "Template deleted successfully" });
+}
+
 export async function updateTemplateLocale(req: Request, res: Response) {
   const { subject, htmlBody, designJson } = req.body ?? {};
   const locale = await templateService.updateTemplateLocale(
