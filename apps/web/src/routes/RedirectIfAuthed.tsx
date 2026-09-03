@@ -1,16 +1,12 @@
-import { Loader2 } from "lucide-react"
 import { Navigate, Outlet } from "react-router-dom"
 import { useSession } from "@/lib/auth-client"
+import { BrandedLoader } from "@/components/BrandedLoader"
 
 export function RedirectIfAuthed() {
   const { data: session, isPending } = useSession()
 
   if (isPending) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <BrandedLoader label="Checking your session" />
   }
 
   if (session) {

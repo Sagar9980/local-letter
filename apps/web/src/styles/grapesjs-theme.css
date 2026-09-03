@@ -1,5 +1,5 @@
 /*
- * Re-theme GrapesJS's default dark chrome to match the app's light shadcn theme.
+ * Re-theme GrapesJS's default chrome to match the app's ink/ember palette.
  * GrapesJS's skin exposes four utility classes for exactly this purpose:
  * one-bg (panel bg), two-color (muted text/icons), three-bg (hover/selected bg),
  * four-color (active/accent color). Overriding those covers most of the UI.

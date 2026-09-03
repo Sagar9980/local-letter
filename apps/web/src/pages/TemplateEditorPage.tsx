@@ -12,10 +12,11 @@ import { apiFetch } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { sortLocales } from "@/lib/templates"
 import type { TemplateDetail, TemplateLocale } from "@/lib/templates"
+import { BrandedLoader } from "@/components/BrandedLoader"
+import { StatusBadge } from "@/components/dashboard/StatusBadge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import {
   Select,
@@ -308,8 +309,8 @@ export function TemplateEditorPage() {
 
   if (notFound) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3 text-center">
-        <p className="font-medium">Template not found</p>
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-ink-950 text-center">
+        <p className="font-medium text-ink-50">Template not found</p>
         <Button variant="outline" onClick={() => navigate(`/projects/${project.slug}/templates`)}>
           Back to templates
         </Button>
@@ -318,16 +319,12 @@ export function TemplateEditorPage() {
   }
 
   if (!template) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <BrandedLoader label="Loading template" />
   }
 
   return (
-    <div className="flex h-screen flex-col bg-muted/40">
-      <header className="flex h-16 shrink-0 items-center gap-3 border-b bg-background px-5 shadow-sm">
+    <div className="flex h-screen flex-col bg-ink-950">
+      <header className="flex h-16 shrink-0 items-center gap-3 border-b border-ink-50/8 bg-ink-950/80 px-5 backdrop-blur-xl">
         <Button
           variant="ghost"
           size="icon"
@@ -335,14 +332,12 @@ export function TemplateEditorPage() {
         >
           <ArrowLeft />
         </Button>
-        <Separator orientation="vertical" className="h-6" />
+        <Separator orientation="vertical" className="h-6 bg-ink-50/10" />
         <div className="min-w-0">
-          <p className="truncate text-sm leading-tight font-medium">{template.name}</p>
-          <p className="truncate text-xs text-muted-foreground">{template.key}</p>
+          <p className="truncate text-sm leading-tight font-medium text-ink-50">{template.name}</p>
+          <p className="truncate font-mono text-[0.6875rem] text-ink-500">{template.key}</p>
         </div>
-        <Badge variant={status === "published" ? "default" : "secondary"} className="ml-1 shrink-0">
-          {status}
-        </Badge>
+        <StatusBadge status={status} className="ml-1" />
 
         <div className="mx-2 flex flex-1 items-center gap-2">
           <Label htmlFor="template-subject" className="sr-only">
@@ -356,12 +351,12 @@ export function TemplateEditorPage() {
               setSubject(e.target.value)
               setIsDirty(true)
             }}
-            className="h-9 max-w-xl bg-muted/40"
+            className="h-9 max-w-xl rounded-xl border-ink-50/10 bg-ink-50/4"
           />
           <VariablePicker variables={usedVariables} />
         </div>
 
-        <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
+        <span className="hidden shrink-0 text-xs text-ink-500 sm:inline">
           {isSaving
             ? "Saving..."
             : isDirty
@@ -371,11 +366,16 @@ export function TemplateEditorPage() {
                 : "No changes yet"}
         </span>
 
-        <Button variant="outline" size="sm" onClick={handlePreview}>
+        <Button variant="outline" size="sm" className="h-9 rounded-full px-3.5" onClick={handlePreview}>
           <Eye />
           Preview
         </Button>
-        <Button size="sm" onClick={handleSave} disabled={isSaving || !isDirty}>
+        <Button
+          size="sm"
+          className="h-9 rounded-full px-4"
+          onClick={handleSave}
+          disabled={isSaving || !isDirty}
+        >
           {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
           Save
         </Button>
@@ -404,7 +404,7 @@ export function TemplateEditorPage() {
         </DropdownMenu>
       </header>
 
-      <div className="flex h-11 shrink-0 items-center gap-1 border-b bg-background px-4">
+      <div className="flex h-11 shrink-0 items-center gap-1 border-b border-ink-50/8 bg-ink-950 px-4">
         <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
           {locales.map((locale) => (
             <button
@@ -412,20 +412,18 @@ export function TemplateEditorPage() {
               type="button"
               onClick={() => handleSwitchLocale(locale.locale)}
               className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors",
+                "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors",
                 locale.locale === activeLocale
-                  ? "bg-muted font-medium text-foreground"
-                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                  ? "bg-ember-400/12 font-medium text-ember-200 ring-1 ring-ember-400/25"
+                  : "text-ink-300 hover:bg-ink-50/6 hover:text-ink-50",
               )}
             >
               {locale.locale}
               {locale.locale === template.defaultLocale && (
-                <span className="text-[10px] tracking-wide text-muted-foreground uppercase">
-                  default
-                </span>
+                <span className="text-[10px] tracking-wide text-ink-500 uppercase">default</span>
               )}
               {locale.status === "published" && (
-                <span className="size-1.5 rounded-full bg-primary" title="Published" />
+                <span className="size-1.5 rounded-full bg-ember-400" title="Published" />
               )}
             </button>
           ))}
@@ -435,7 +433,7 @@ export function TemplateEditorPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="shrink-0 text-muted-foreground hover:text-destructive"
+            className="shrink-0 text-ink-500 hover:bg-seal-500/10 hover:text-seal-400"
             onClick={handleDeleteLocale}
           >
             <Trash2 />
@@ -445,7 +443,7 @@ export function TemplateEditorPage() {
         <Button
           variant="ghost"
           size="sm"
-          className="shrink-0"
+          className="shrink-0 text-ink-300 hover:text-ink-50"
           onClick={() => setIsLocaleDialogOpen(true)}
         >
           <Plus />
@@ -454,11 +452,13 @@ export function TemplateEditorPage() {
       </div>
 
       {error && (
-        <p className="border-b bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
+        <p className="border-b border-seal-500/20 bg-seal-500/10 px-4 py-2 text-sm text-seal-400">
+          {error}
+        </p>
       )}
 
-      <div className="min-h-0 flex-1 overflow-hidden bg-muted/40 p-4">
-        <div className="mx-auto h-full max-w-6xl overflow-hidden rounded-xl border bg-background shadow-sm">
+      <div className="min-h-0 flex-1 overflow-hidden bg-ink-950 p-4">
+        <div className="mx-auto h-full max-w-6xl overflow-hidden rounded-2xl bg-ink-950 ring-1 ring-ink-50/8">
           <div ref={containerRef} className="h-full" />
         </div>
       </div>
@@ -486,7 +486,7 @@ export function TemplateEditorPage() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="rounded-2xl">
           <DialogHeader>
             <DialogTitle>Add locale</DialogTitle>
           </DialogHeader>
@@ -495,21 +495,22 @@ export function TemplateEditorPage() {
               <Label htmlFor="new-locale">Locale code</Label>
               <Input
                 id="new-locale"
+                className="h-10 rounded-xl"
                 value={newLocale}
                 onChange={(e) => setNewLocale(e.target.value)}
                 placeholder="fr, pt-BR, es-MX"
                 autoFocus
                 required
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-ink-500">
                 A language code, optionally with a region — the SDK matches this against its{" "}
-                <code>locale</code> option.
+                <span className="font-mono text-ink-300">locale</span> option.
               </p>
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="copy-from">Start from</Label>
               <Select value={copyFrom} onValueChange={setCopyFrom}>
-                <SelectTrigger id="copy-from" className="w-full">
+                <SelectTrigger id="copy-from" className="h-10 w-full rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -524,11 +525,11 @@ export function TemplateEditorPage() {
             </div>
             {localeError && <p className="text-sm text-destructive">{localeError}</p>}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsLocaleDialogOpen(false)}>
+              <Button type="button" variant="ghost" onClick={() => setIsLocaleDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isAddingLocale}>
-                {isAddingLocale ? "Adding..." : "Add locale"}
+              <Button type="submit" disabled={isAddingLocale} className="h-9 rounded-full px-4">
+                {isAddingLocale ? "Adding…" : "Add locale"}
               </Button>
             </DialogFooter>
           </form>

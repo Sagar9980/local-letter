@@ -1,23 +1,19 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
-import { Mail } from "lucide-react"
+import { ArrowRight, Loader2 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { authClient } from "@/lib/auth-client"
+import { AuthShell } from "@/components/auth/AuthShell"
+import { AuthField, AuthPasswordField, FormAlert } from "@/components/auth/form"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 
 export function LoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -26,7 +22,11 @@ export function LoginPage() {
     setError(null)
     setIsSubmitting(true)
 
-    const { error: signInError } = await authClient.signIn.email({ email, password })
+    const { error: signInError } = await authClient.signIn.email({
+      email,
+      password,
+      rememberMe,
+    })
 
     setIsSubmitting(false)
 
@@ -39,64 +39,72 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-muted/30 p-4">
-      <div className="flex w-full max-w-sm flex-col gap-6">
-        <div className="flex items-center justify-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Mail className="size-4" />
-          </div>
-          <span className="text-lg font-semibold">Local Letter</span>
+    <AuthShell
+      eyebrow="Welcome back"
+      title="Sign in to your workspace"
+      description="Pick up where you left off — your projects, templates and keys are waiting."
+      footer={
+        <>
+          New to Local Letter?{" "}
+          <Link
+            to="/signup"
+            className="font-medium text-ember-300 underline-offset-4 transition-colors hover:text-ember-200 hover:underline"
+          >
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+        <AuthField
+          id="email"
+          label="Email"
+          type="email"
+          placeholder="you@company.com"
+          autoComplete="email"
+          autoFocus
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <AuthPasswordField
+          id="password"
+          label="Password"
+          placeholder="••••••••"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <div className="flex items-center gap-2.5">
+          <Checkbox
+            id="remember"
+            checked={rememberMe}
+            onCheckedChange={(checked) => setRememberMe(checked === true)}
+          />
+          <Label htmlFor="remember" className="text-[0.8125rem] font-normal text-ink-300">
+            Keep me signed in on this device
+          </Label>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Welcome back</CardTitle>
-            <CardDescription>Log in to your account to continue</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              {error && (
-                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error}
-                </p>
-              )}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Logging in..." : "Log in"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        {error && <FormAlert>{error}</FormAlert>}
 
-        <p className="text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link to="/signup" className="font-medium text-foreground underline underline-offset-4">
-            Sign up
-          </Link>
-        </p>
-      </div>
-    </div>
+        <Button type="submit" disabled={isSubmitting} className="group h-11 w-full rounded-xl text-[0.9375rem]">
+          {isSubmitting ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Signing in…
+            </>
+          ) : (
+            <>
+              Sign in
+              <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </>
+          )}
+        </Button>
+      </form>
+    </AuthShell>
   )
 }
