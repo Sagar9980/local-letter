@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { FormEvent } from "react"
 import { ArrowLeft, Eye, Loader2, MoreVertical, Plus, Save, Trash2 } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
@@ -39,6 +39,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { DeleteTemplateDialog } from "@/components/dashboard/DeleteTemplateDialog"
 import type { DeletableTemplate } from "@/components/dashboard/DeleteTemplateDialog"
+import { VariablePicker } from "@/components/dashboard/VariablePicker"
+import { extractVariables } from "@/lib/variables"
 
 const BLANK = "__blank__"
 
@@ -87,6 +89,11 @@ export function TemplateEditorPage() {
   const [notFound, setNotFound] = useState(false)
 
   const [pendingDelete, setPendingDelete] = useState<DeletableTemplate | null>(null)
+
+  const usedVariables = useMemo(() => {
+    const activeBody = locales.find((l) => l.locale === activeLocale)?.htmlBody ?? ""
+    return extractVariables(subject, activeBody)
+  }, [subject, locales, activeLocale])
 
   const [isLocaleDialogOpen, setIsLocaleDialogOpen] = useState(false)
   const [newLocale, setNewLocale] = useState("")
@@ -351,6 +358,7 @@ export function TemplateEditorPage() {
             }}
             className="h-9 max-w-xl bg-muted/40"
           />
+          <VariablePicker variables={usedVariables} />
         </div>
 
         <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
