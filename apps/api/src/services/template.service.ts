@@ -107,6 +107,22 @@ export async function getTemplate(slug: string, ownerId: string, key: string) {
   };
 }
 
+// Deletes a template and, by cascade, every locale under it. Irreversible and
+// unrecoverable — any SDK call still rendering this key starts 404ing, which is
+// why the dashboard confirms by name before calling this.
+export async function deleteTemplate(slug: string, ownerId: string, key: string) {
+  const template = await getOwnedTemplate(slug, ownerId, key);
+
+  await prisma.template.delete({ where: { id: template.id } });
+
+  return {
+    id: template.id,
+    key: template.key,
+    name: template.name,
+    localesDeleted: template.locales.length,
+  };
+}
+
 export async function updateTemplateLocale(
   slug: string,
   ownerId: string,

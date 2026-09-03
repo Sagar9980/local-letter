@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { FormEvent } from "react"
-import { FileText, Library, Plus } from "lucide-react"
+import { FileText, Library, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useCurrentProject } from "@/lib/project-context"
 import { apiFetch } from "@/lib/api"
@@ -35,6 +35,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { DeleteTemplateDialog } from "@/components/dashboard/DeleteTemplateDialog"
+import type { DeletableTemplate } from "@/components/dashboard/DeleteTemplateDialog"
 
 export function TemplatesPage() {
   const navigate = useNavigate()
@@ -42,6 +50,8 @@ export function TemplatesPage() {
 
   const [templates, setTemplates] = useState<TemplateSummary[] | null>(null)
   const [status, setStatus] = useState<string>("all")
+
+  const [pendingDelete, setPendingDelete] = useState<DeletableTemplate | null>(null)
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [name, setName] = useState("")
@@ -205,6 +215,9 @@ export function TemplatesPage() {
                     <TableHead>Locales</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Updated</TableHead>
+                    <TableHead className="w-10">
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -243,6 +256,41 @@ export function TemplatesPage() {
                       <TableCell className="text-muted-foreground">
                         {new Date(template.updatedAt).toLocaleDateString()}
                       </TableCell>
+                      <TableCell
+                        className="text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" aria-label={`Actions for ${template.name}`}>
+                              <MoreHorizontal />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onSelect={() =>
+                                navigate(`/projects/${project.slug}/templates/${template.key}`)
+                              }
+                            >
+                              <Pencil />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onSelect={() =>
+                                setPendingDelete({
+                                  key: template.key,
+                                  name: template.name,
+                                  localeCount: template.locales.length,
+                                })
+                              }
+                            >
+                              <Trash2 />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -251,6 +299,15 @@ export function TemplatesPage() {
           )}
         </CardContent>
       </Card>
+
+      <DeleteTemplateDialog
+        projectSlug={project.slug}
+        template={pendingDelete}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        onDeleted={(deleted) =>
+          setTemplates((prev) => prev?.filter((t) => t.key !== deleted.key) ?? null)
+        }
+      />
     </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import type { FormEvent } from "react"
-import { ArrowLeft, Eye, Loader2, Plus, Save, Trash2 } from "lucide-react"
+import { ArrowLeft, Eye, Loader2, MoreVertical, Plus, Save, Trash2 } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import grapesjs from "grapesjs"
 import type { Editor } from "grapesjs"
@@ -31,6 +31,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { DeleteTemplateDialog } from "@/components/dashboard/DeleteTemplateDialog"
+import type { DeletableTemplate } from "@/components/dashboard/DeleteTemplateDialog"
 
 const BLANK = "__blank__"
 
@@ -77,6 +85,8 @@ export function TemplateEditorPage() {
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
+
+  const [pendingDelete, setPendingDelete] = useState<DeletableTemplate | null>(null)
 
   const [isLocaleDialogOpen, setIsLocaleDialogOpen] = useState(false)
   const [newLocale, setNewLocale] = useState("")
@@ -361,6 +371,29 @@ export function TemplateEditorPage() {
           {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
           Save
         </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Template actions">
+              <MoreVertical />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={() =>
+                setPendingDelete({
+                  key: template.key,
+                  name: template.name,
+                  localeCount: locales.length,
+                })
+              }
+            >
+              <Trash2 />
+              Delete template
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       <div className="flex h-11 shrink-0 items-center gap-1 border-b bg-background px-4">
@@ -421,6 +454,18 @@ export function TemplateEditorPage() {
           <div ref={containerRef} className="h-full" />
         </div>
       </div>
+
+      <DeleteTemplateDialog
+        projectSlug={project.slug}
+        template={pendingDelete}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        onDeleted={() => {
+          // Clear the dirty flag first: the template is gone, so the unload
+          // guard must not warn about unsaved changes on the way out.
+          setIsDirty(false)
+          navigate(`/projects/${project.slug}/templates`)
+        }}
+      />
 
       <Dialog
         open={isLocaleDialogOpen}

@@ -17,6 +17,7 @@ templateRouter.post("/", asyncHandler(templateController.createTemplate));
 templateRouter.post("/import", asyncHandler(libraryController.importPack));
 
 templateRouter.get("/:key", asyncHandler(templateController.getTemplate));
+templateRouter.delete("/:key", asyncHandler(templateController.deleteTemplate));
 
 // Saves the default locale; :key/locales/:locale saves a specific one.
 templateRouter.put("/:key", asyncHandler(templateController.updateTemplateLocale));
