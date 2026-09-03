@@ -47,6 +47,12 @@ export const travelPack: TemplatePack = {
         { type: "heading", text: "You're booked", align: "center" },
         { type: "text", text: "{{destination_name}}", align: "center", muted: true },
         {
+          type: "image",
+          src: "{{property_image_url}}",
+          alt: "{{destination_name}}",
+          radius: true,
+        },
+        {
           type: "panel",
           title: "Your booking",
           rows: [
@@ -85,6 +91,12 @@ export const travelPack: TemplatePack = {
       blocks: [
         { type: "heading", text: "Your trip to {{destination_name}}", align: "center" },
         { type: "text", text: "{{trip_dates}}", align: "center", muted: true },
+        {
+          type: "image",
+          src: "{{destination_image_url}}",
+          alt: "{{destination_name}}",
+          radius: true,
+        },
         { type: "divider" },
         {
           type: "steps",

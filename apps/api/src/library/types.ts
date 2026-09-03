@@ -38,6 +38,17 @@ export type Block =
   /** Linked story list for newsletters and digests. */
   | { type: "articles"; items: { title: string; excerpt: string; href: string; meta?: string }[] }
   | { type: "quote"; text: string; author?: string }
+  /** `src`/`alt` are almost always `{{variables}}` — real assets live outside the template. */
+  | {
+      type: "image";
+      src: string;
+      alt: string;
+      /** Fraction of the card width, 0-1. Defaults to full width. */
+      widthRatio?: number;
+      align?: Align;
+      radius?: boolean;
+      caption?: string;
+    }
   | { type: "divider" }
   | { type: "spacer"; size?: number };
 

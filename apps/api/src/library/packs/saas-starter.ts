@@ -463,6 +463,12 @@ export const saasStarterPack: TemplatePack = {
       blocks: [
         { type: "heading", text: "{{feature_name}} is here" },
         { type: "text", text: "{{feature_summary}}" },
+        {
+          type: "image",
+          src: "{{feature_image_url}}",
+          alt: "{{feature_name}}",
+          radius: true,
+        },
         { type: "button", label: "See what's new", href: "{{changelog_url}}" },
         { type: "divider" },
         { type: "heading", text: "Also shipped", size: "md" },

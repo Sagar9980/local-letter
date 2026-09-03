@@ -45,6 +45,12 @@ export const eventsPack: TemplatePack = {
       preheader: "Your ticket for {{event_date}} is confirmed.",
       blocks: [
         { type: "heading", text: "You're in 🎟" },
+        {
+          type: "image",
+          src: "{{event_banner_url}}",
+          alt: "{{event_name}}",
+          radius: true,
+        },
         { type: "text", text: "Your ticket for <strong>{{event_name}}</strong> is confirmed." },
         {
           type: "panel",
@@ -220,6 +226,12 @@ export const eventsPack: TemplatePack = {
             'Slides and resources — <a href="{{slides_url}}" style="color:inherit;">download</a>',
             'Photos — <a href="{{photos_url}}" style="color:inherit;">browse the gallery</a>',
           ],
+        },
+        {
+          type: "image",
+          src: "{{recap_photo_url}}",
+          alt: "{{event_name}} highlights",
+          radius: true,
         },
         { type: "button", label: "Share your feedback", href: "{{survey_url}}" },
         {

@@ -109,6 +109,11 @@ export const nonprofitPack: TemplatePack = {
       preheader: "{{campaign_summary}}",
       blocks: [
         { type: "heading", text: "{{campaign_name}}", align: "center" },
+        {
+          type: "image",
+          src: "{{campaign_image_url}}",
+          alt: "{{campaign_name}}",
+        },
         { type: "text", text: "{{campaign_summary}}" },
         { type: "quote", text: "{{beneficiary_quote}}", author: "{{beneficiary_name}}" },
         {
@@ -132,6 +137,12 @@ export const nonprofitPack: TemplatePack = {
       preheader: "The numbers behind {{period}}.",
       blocks: [
         { type: "heading", text: "{{period}} in numbers", align: "center" },
+        {
+          type: "image",
+          src: "{{impact_photo_url}}",
+          alt: "{{period}} impact",
+          radius: true,
+        },
         {
           type: "metrics",
           items: [
@@ -194,6 +205,12 @@ export const nonprofitPack: TemplatePack = {
       preheader: "{{event_date}} · {{event_location}}.",
       blocks: [
         { type: "heading", text: "{{event_name}}", align: "center" },
+        {
+          type: "image",
+          src: "{{event_image_url}}",
+          alt: "{{event_name}}",
+          radius: true,
+        },
         { type: "text", text: "{{event_summary}}", align: "center" },
         {
           type: "panel",

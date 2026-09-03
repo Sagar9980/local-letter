@@ -201,6 +201,12 @@ export const communityPack: TemplatePack = {
       preheader: "{{event_summary}}",
       blocks: [
         { type: "heading", text: "{{event_name}}", align: "center" },
+        {
+          type: "image",
+          src: "{{event_image_url}}",
+          alt: "{{event_name}}",
+          radius: true,
+        },
         { type: "text", text: "{{event_summary}}", align: "center" },
         {
           type: "panel",

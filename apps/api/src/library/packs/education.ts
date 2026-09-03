@@ -170,6 +170,14 @@ export const educationPack: TemplatePack = {
       blocks: [
         { type: "heading", text: "Congratulations, {{first_name}}" },
         {
+          type: "image",
+          src: "{{certificate_preview_url}}",
+          alt: "Certificate of completion for {{course_name}}",
+          widthRatio: 0.7,
+          align: "center",
+          radius: true,
+        },
+        {
           type: "text",
           text: "You've completed <strong>{{course_name}}</strong> with a final grade of {{final_grade}}. Your certificate is ready.",
         },
@@ -220,6 +228,12 @@ export const educationPack: TemplatePack = {
       preheader: "From {{instructor_name}} — enrolment is open.",
       blocks: [
         { type: "heading", text: "{{course_name}} is now open" },
+        {
+          type: "image",
+          src: "{{course_image_url}}",
+          alt: "{{course_name}}",
+          radius: true,
+        },
         { type: "text", text: "{{course_summary}}" },
         {
           type: "list",

@@ -250,6 +250,28 @@ function renderBlock(block: Block, theme: Theme): string {
         `</td></tr></table>`
       );
 
+    case "image": {
+      const contentWidth = CARD_WIDTH - GUTTER * 2;
+      const maxWidth = Math.round(contentWidth * (block.widthRatio ?? 1));
+      const wrapperAlign = align(block.align);
+      const caption = block.caption
+        ? `<div style="margin-top:8px;font-family:${font};font-size:12px;text-align:${wrapperAlign};color:${theme.muted};">${block.caption}</div>`
+        : "";
+      return (
+        // Fixed `width` attribute keeps Outlook's Word engine, which ignores
+        // max-width, from rendering the image at its native pixel size; the
+        // 100%-wide style is what lets it shrink on clients that honour CSS.
+        `<table role="presentation" width="${maxWidth}" cellpadding="0" cellspacing="0" border="0" ` +
+        `align="${wrapperAlign}" style="width:${maxWidth}px;max-width:100%;">` +
+        `<tr><td>` +
+        `<img src="${block.src}" alt="${block.alt}" width="${maxWidth}" ` +
+        `style="display:block;width:100%;max-width:${maxWidth}px;height:auto;border:0;` +
+        `${block.radius ? `border-radius:${theme.radius}px;` : ""}" />` +
+        caption +
+        `</td></tr></table>`
+      );
+    }
+
     case "divider":
       return `<div style="height:1px;line-height:1px;font-size:0;background-color:${theme.border};">&nbsp;</div>`;
 

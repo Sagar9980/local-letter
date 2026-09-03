@@ -48,6 +48,11 @@ export const newsletterPack: TemplatePack = {
       blocks: [
         { type: "text", text: "Issue #{{issue_number}} · {{issue_date}}", align: "center", muted: true },
         { type: "heading", text: "{{issue_title}}", align: "center" },
+        {
+          type: "image",
+          src: "{{issue_image_url}}",
+          alt: "{{issue_title}}",
+        },
         { type: "divider" },
         { type: "text", text: "{{editors_note}}" },
         { type: "heading", text: "This week", size: "md" },
@@ -87,6 +92,11 @@ export const newsletterPack: TemplatePack = {
       blocks: [
         { type: "heading", text: "{{announcement_title}}", align: "center" },
         { type: "text", text: "{{announcement_date}}", align: "center", muted: true },
+        {
+          type: "image",
+          src: "{{announcement_image_url}}",
+          alt: "{{announcement_title}}",
+        },
         { type: "divider" },
         { type: "text", text: "{{announcement_body}}" },
         { type: "quote", text: "{{quote_text}}", author: "{{quote_author}}" },

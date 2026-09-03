@@ -216,6 +216,13 @@ export const fintechPack: TemplatePack = {
       blocks: [
         { type: "heading", text: "Your {{card_type}} card is on its way" },
         {
+          type: "image",
+          src: "{{card_image_url}}",
+          alt: "{{card_brand}} {{card_type}} card",
+          widthRatio: 0.55,
+          align: "center",
+        },
+        {
           type: "panel",
           rows: [
             { label: "Card", value: "{{card_brand}} •••• {{card_last4}}" },

@@ -236,6 +236,14 @@ export const ecommercePack: TemplatePack = {
       blocks: [
         { type: "heading", text: "{{product_name}} is back in stock" },
         {
+          type: "image",
+          src: "{{product_image_url}}",
+          alt: "{{product_name}}",
+          widthRatio: 0.6,
+          align: "center",
+          radius: true,
+        },
+        {
           type: "text",
           text: "You asked us to tell you when this returned — it's available again, but stock is limited.",
         },
@@ -265,6 +273,14 @@ export const ecommercePack: TemplatePack = {
       blocks: [
         { type: "heading", text: "How did we do?" },
         {
+          type: "image",
+          src: "{{product_image_url}}",
+          alt: "{{product_name}}",
+          widthRatio: 0.5,
+          align: "center",
+          radius: true,
+        },
+        {
           type: "text",
           text: "You received {{product_name}} on {{delivered_at}}. If you have a minute, other shoppers would love to hear what you think.",
         },
@@ -286,6 +302,11 @@ export const ecommercePack: TemplatePack = {
       preheader: "Welcome to {{company_name}} — your code is inside.",
       blocks: [
         { type: "heading", text: "Welcome — here's {{discount_value}} off" },
+        {
+          type: "image",
+          src: "{{banner_image_url}}",
+          alt: "{{company_name}}",
+        },
         {
           type: "text",
           text: "Thanks for joining {{company_name}}. Use this code at checkout on your first order.",

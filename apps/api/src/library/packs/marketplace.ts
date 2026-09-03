@@ -129,6 +129,12 @@ export const marketplacePack: TemplatePack = {
       preheader: "Your listing passed review and is now searchable.",
       blocks: [
         { type: "heading", text: "{{listing_name}} is live" },
+        {
+          type: "image",
+          src: "{{listing_image_url}}",
+          alt: "{{listing_name}}",
+          radius: true,
+        },
         { type: "text", text: "Your listing passed review and is now visible to buyers." },
         {
           type: "panel",
