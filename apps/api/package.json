@@ -2,6 +2,13 @@
   "name": "@local-letter/api",
   "version": "0.0.0",
   "private": true,
+  "description": "Local Letter's API — auth, projects, templates, translations, and rendering.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sagar9980/local-letter.git",
+    "directory": "apps/api"
+  },
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

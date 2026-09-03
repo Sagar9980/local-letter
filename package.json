@@ -1,6 +1,16 @@
 {
   "name": "local-letter",
   "private": true,
+  "description": "Transactional email that speaks every language — self-hosted template editor, translations, and rendering API.",
+  "license": "MIT",
+  "homepage": "https://github.com/Sagar9980/local-letter#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sagar9980/local-letter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sagar9980/local-letter/issues"
+  },
   "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=20"

@@ -2,6 +2,13 @@
   "name": "@local-letter/site",
   "private": true,
   "version": "0.0.0",
+  "description": "Local Letter's public marketing site.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sagar9980/local-letter.git",
+    "directory": "apps/site"
+  },
   "scripts": {
     "dev": "next dev --port 5174",
     "build": "next build",
