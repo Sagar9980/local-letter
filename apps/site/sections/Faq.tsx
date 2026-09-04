@@ -1,49 +1,49 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
-import { Plus } from 'lucide-react'
-import { Reveal } from '@/components/Reveal'
-import RichText from '@/components/RichText'
-import { cn } from '@/lib/utils'
+import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Plus } from "lucide-react";
+import { Reveal } from "@/components/Reveal";
+import RichText from "@/components/RichText";
+import { cn } from "@/lib/utils";
 
 const faqs = [
   {
-    q: 'Does Local Letter send the email for me?',
-    a: 'It can, and it does not have to. The Node SDK will render a template and hand it to Resend in a single call, or return the subject and HTML so you can send it with whatever mailer you already run. Local Letter itself never holds an SMTP connection.',
+    q: "Does Local Letter send the email for me?",
+    a: "It can, and it does not have to. The Node SDK will render a template and hand it to Resend in a single call, or return the subject and HTML so you can send it with whatever mailer you already run. Local Letter itself never holds an SMTP connection.",
   },
   {
-    q: 'What happens when a locale is not translated yet?',
-    a: 'You configure a fallback chain per render call and a default locale per template. If a requested locale has no published variant, the render walks the chain rather than failing — so a half-translated template still ships correct email.',
+    q: "What happens when a locale is not translated yet?",
+    a: "You configure a fallback chain per render call and a default locale per template. If a requested locale has no published variant, the render walks the chain rather than failing — so a half-translated template still ships correct email.",
   },
   {
-    q: 'Can non-engineers change templates safely?',
-    a: 'That is the point of the draft and publish split. Marketing edits a draft in the visual editor as often as they like; nothing reaches production until the locale is published, and every published version is snapshotted for rollback.',
+    q: "Can non-engineers change templates safely?",
+    a: "That is the point of the draft and publish split. Marketing edits a draft in the visual editor as often as they like; nothing reaches production until the locale is published, and every published version is snapshotted for rollback.",
   },
   {
-    q: 'How are API keys scoped?',
-    a: 'One key per project. Keys are hashed at rest and shown exactly once at creation. A key can only read templates in its own project, and revoking takes effect on the next request.',
+    q: "How are API keys scoped?",
+    a: "One key per project. Keys are hashed at rest and shown exactly once at creation. A key can only read templates in its own project, and revoking takes effect on the next request.",
   },
   {
-    q: 'Which languages will the SDK support?',
-    a: 'Node.js is available now. Python, Go, Ruby and PHP clients are in progress. Until those land, every capability is reachable over a plain authenticated HTTP endpoint, so any language can integrate today.',
+    q: "Which languages will the SDK support?",
+    a: "Node.js is available now. Python, Go, Ruby and PHP clients are in progress. Until those land, every capability is reachable over a plain authenticated HTTP endpoint, so any language can integrate today.",
   },
   {
-    q: 'Where are the docs?',
-    a: 'Full documentation is being written and will land at /docs. In the meantime, contact sales and we will walk your team through deployment, template modelling and SDK integration directly.',
+    q: "Where are the docs?",
+    a: "Full documentation is being written and will land at /docs. In the meantime, contact usand we will walk your team through deployment, template modelling and SDK integration directly.",
   },
   {
-    q: 'What does it cost?',
-    a: 'Self-hosting is free and MIT licensed — unlimited templates, locales and sends, with no seat counts and no feature gates. Local Letter Cloud, the managed version, is coming soon and its pricing will be published at launch.',
+    q: "What does it cost?",
+    a: "Self-hosting is free and MIT licensed — unlimited templates, locales and sends, with no seat counts and no feature gates. Local Letter Cloud, the managed version, is coming soon and its pricing will be published at launch.",
   },
   {
-    q: 'What is Local Letter Cloud?',
-    a: 'The same platform, run by us, for teams who would rather not own the Postgres, the upgrades or the on-call. It adds managed hosting, regional data residency, SSO, audit logs and SLA-backed support on top of everything the open source version already does. Join the waitlist and we will bring you in before general availability.',
+    q: "What is Local Letter Cloud?",
+    a: "The same platform, run by us, for teams who would rather not own the Postgres, the upgrades or the on-call. It adds managed hosting, regional data residency, SSO, audit logs and SLA-backed support on top of everything the open source version already does. Join the waitlist and we will bring you in before general availability.",
   },
-]
+];
 
 export default function Faq() {
-  const [open, setOpen] = useState<number | null>(0)
+  const [open, setOpen] = useState<number | null>(0);
 
   return (
     <section className="relative overflow-hidden border-t border-ink-50/8 py-24 sm:py-32">
@@ -61,7 +61,7 @@ export default function Faq() {
           <Reveal delay={0.05}>
             <div className="divide-y divide-ink-50/8 border-y border-ink-50/8">
               {faqs.map((faq, index) => {
-                const isOpen = open === index
+                const isOpen = open === index;
                 return (
                   <div key={faq.q}>
                     <button
@@ -72,16 +72,16 @@ export default function Faq() {
                     >
                       <span
                         className={cn(
-                          'text-[1rem] font-medium tracking-[-0.015em] transition-colors duration-200',
-                          isOpen ? 'text-ink-50' : 'text-ink-100',
+                          "text-[1rem] font-medium tracking-[-0.015em] transition-colors duration-200",
+                          isOpen ? "text-ink-50" : "text-ink-100",
                         )}
                       >
                         {faq.q}
                       </span>
                       <Plus
                         className={cn(
-                          'mt-0.5 size-4 shrink-0 text-ink-500 transition-transform duration-300',
-                          isOpen && 'rotate-45 text-ember-300',
+                          "mt-0.5 size-4 shrink-0 text-ink-500 transition-transform duration-300",
+                          isOpen && "rotate-45 text-ember-300",
                         )}
                       />
                     </button>
@@ -89,9 +89,12 @@ export default function Faq() {
                       {isOpen ? (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
+                          animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{
+                            duration: 0.3,
+                            ease: [0.16, 1, 0.3, 1],
+                          }}
                           className="overflow-hidden"
                         >
                           <p className="max-w-xl pb-6 pr-10 text-[0.9375rem] leading-relaxed text-ink-300">
@@ -101,12 +104,13 @@ export default function Faq() {
                       ) : null}
                     </AnimatePresence>
                   </div>
-                )
+                );
               })}
             </div>
           </Reveal>
         </div>
       </div>
     </section>
-  )
+  );
 }
+

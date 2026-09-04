@@ -104,7 +104,7 @@ export default function ContactPage() {
       <div className="ll-shell relative z-10">
         <div className="grid gap-14 [&>*]:min-w-0 lg:grid-cols-[0.85fr_1fr] lg:items-start">
           <Reveal>
-            <p className="ll-eyebrow">Contact sales</p>
+            <p className="ll-eyebrow">Contact</p>
             <h1 className="ll-h2 mt-4 text-ink-50">
               Talk to the people
               <br />
@@ -264,7 +264,7 @@ export default function ContactPage() {
                         Sending
                       </>
                     ) : (
-                      "Contact sales"
+                      "Contact"
                     )}
                   </button>
 

@@ -1,38 +1,38 @@
-import Link from 'next/link'
-import { ArrowUpRight } from 'lucide-react'
-import { LogoMark } from '@/components/Logo'
-import { site } from '@/lib/site'
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { LogoMark } from "@/components/Logo";
+import { site } from "@/lib/site";
 
 const columns = [
   {
-    title: 'Product',
+    title: "Product",
     links: [
-      { label: 'Features', href: '/#features' },
-      { label: 'How it works', href: '/#how-it-works' },
-      { label: 'SDK', href: '/#sdk' },
-      { label: 'Self-hosting', href: '/#self-host' },
-      { label: 'Pricing', to: '/pricing' },
-      { label: 'Local Letter Cloud', to: '/pricing', note: 'Soon' },
+      { label: "Features", href: "/#features" },
+      { label: "How it works", href: "/#how-it-works" },
+      { label: "SDK", href: "/#sdk" },
+      { label: "Self-hosting", href: "/#self-host" },
+      { label: "Pricing", to: "/pricing" },
+      { label: "Local Letter Cloud", to: "/pricing", note: "Soon" },
     ],
   },
   {
-    title: 'Developers',
+    title: "Developers",
     links: [
-      { label: 'Documentation', to: '/docs', note: 'Soon' },
-      { label: 'Node SDK', href: '/#sdk' },
-      { label: 'Other languages', href: '/#sdk', note: 'Soon' },
-      { label: 'GitHub', href: site.githubUrl, external: true },
+      { label: "Documentation", to: "/docs", note: "Soon" },
+      { label: "Node SDK", href: "/#sdk" },
+      { label: "Other languages", href: "/#sdk", note: "Soon" },
+      { label: "GitHub", href: site.githubUrl, external: true },
     ],
   },
   {
-    title: 'Company',
+    title: "Company",
     links: [
-      { label: 'Contact sales', to: '/contact' },
-      { label: 'Talk to an engineer', to: '/contact' },
-      { label: 'Security & data residency', href: '/#self-host' },
+      { label: "Contact", to: "/contact" },
+      { label: "Talk to an engineer", to: "/contact" },
+      { label: "Security & data residency", href: "/#self-host" },
     ],
   },
-] as const
+] as const;
 
 export default function SiteFooter() {
   return (
@@ -47,8 +47,8 @@ export default function SiteFooter() {
               </span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-ink-500">
-              An open-source platform for designing, translating and rendering transactional
-              email — running entirely on your own infrastructure.
+              An open-source platform for designing, translating and rendering
+              transactional email — running entirely on your own infrastructure.
             </p>
           </div>
 
@@ -60,24 +60,29 @@ export default function SiteFooter() {
               <ul className="mt-4 space-y-3">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    {'to' in link && link.to ? (
-                      <Link href={link.to}
+                    {"to" in link && link.to ? (
+                      <Link
+                        href={link.to}
                         className="inline-flex items-center gap-2 text-sm text-ink-500 transition-colors hover:text-ink-100"
                       >
                         {link.label}
-                        {'note' in link && link.note ? <Note>{link.note}</Note> : null}
+                        {"note" in link && link.note ? (
+                          <Note>{link.note}</Note>
+                        ) : null}
                       </Link>
                     ) : (
                       <a
-                        href={'href' in link ? link.href : '#'}
-                        {...('external' in link && link.external
-                          ? { target: '_blank', rel: 'noreferrer' }
+                        href={"href" in link ? link.href : "#"}
+                        {...("external" in link && link.external
+                          ? { target: "_blank", rel: "noreferrer" }
                           : {})}
                         className="inline-flex items-center gap-2 text-sm text-ink-500 transition-colors hover:text-ink-100"
                       >
                         {link.label}
-                        {'note' in link && link.note ? <Note>{link.note}</Note> : null}
-                        {'external' in link && link.external ? (
+                        {"note" in link && link.note ? (
+                          <Note>{link.note}</Note>
+                        ) : null}
+                        {"external" in link && link.external ? (
                           <ArrowUpRight className="size-3 opacity-60" />
                         ) : null}
                       </a>
@@ -101,7 +106,7 @@ export default function SiteFooter() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
 
 function Note({ children }: { children: React.ReactNode }) {
@@ -109,5 +114,6 @@ function Note({ children }: { children: React.ReactNode }) {
     <span className="rounded-full bg-ember-400/10 px-1.5 py-0.5 text-[0.625rem] font-medium tracking-wide text-ember-300">
       {children}
     </span>
-  )
+  );
 }
+

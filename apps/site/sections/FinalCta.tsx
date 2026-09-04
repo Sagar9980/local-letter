@@ -1,9 +1,9 @@
-import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
-import { GithubIcon } from '@/components/BrandIcons'
-import { Reveal } from '@/components/Reveal'
-import { HorizonGlow } from '@/components/Glow'
-import { site } from '@/lib/site'
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { GithubIcon } from "@/components/BrandIcons";
+import { Reveal } from "@/components/Reveal";
+import { HorizonGlow } from "@/components/Glow";
+import { site } from "@/lib/site";
 
 export default function FinalCta() {
   return (
@@ -19,13 +19,17 @@ export default function FinalCta() {
             <span className="ll-serif ll-gradient-text">email pipeline</span>
           </h2>
           <p className="mx-auto mt-5 max-w-lg text-[1.0625rem] leading-relaxed text-ink-300">
-            Tell us how many locales you send in and where you need it deployed. We will walk
-            your team through the stack and put together a plan that fits.
+            Tell us how many locales you send in and where you need it deployed.
+            We will walk your team through the stack and put together a plan
+            that fits.
           </p>
 
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/contact" className="ll-btn ll-btn-primary group w-full sm:w-auto">
-              Contact sales
+            <Link
+              href="/contact"
+              className="ll-btn ll-btn-primary group w-full sm:w-auto"
+            >
+              Contact
               <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
             <a
@@ -45,5 +49,6 @@ export default function FinalCta() {
         </Reveal>
       </div>
     </section>
-  )
+  );
 }
+

@@ -1,48 +1,51 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { ArrowRight, ArrowUpRight, Menu, X } from 'lucide-react'
-import { Wordmark } from '@/components/Logo'
-import { site } from '@/lib/site'
-import { cn } from '@/lib/utils'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
+import { Wordmark } from "@/components/Logo";
+import { site } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 export default function SiteNav() {
-  const [scrolled, setScrolled] = useState(false)
-  const [open, setOpen] = useState(false)
-  const pathname = usePathname()
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Close the mobile sheet whenever the route changes.
-  useEffect(() => setOpen(false), [pathname])
+  useEffect(() => setOpen(false), [pathname]);
 
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : ''
+    document.body.style.overflow = open ? "hidden" : "";
     return () => {
-      document.body.style.overflow = ''
-    }
-  }, [open])
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <CloudBanner />
       <div
         className={cn(
-          'transition-[background-color,box-shadow,backdrop-filter] duration-300',
+          "transition-[background-color,box-shadow,backdrop-filter] duration-300",
           scrolled
-            ? 'bg-ink-950/72 shadow-[inset_0_-1px_0_0_color-mix(in_oklab,var(--color-ink-50)_9%,transparent)] backdrop-blur-xl'
-            : 'bg-transparent',
+            ? "bg-ink-950/72 shadow-[inset_0_-1px_0_0_color-mix(in_oklab,var(--color-ink-50)_9%,transparent)] backdrop-blur-xl"
+            : "bg-transparent",
         )}
       >
         <nav className="ll-shell flex min-h-16 items-center justify-between gap-6">
-          <Link href="/" className="shrink-0 transition-opacity hover:opacity-85">
+          <Link
+            href="/"
+            className="shrink-0 transition-opacity hover:opacity-85"
+          >
             <Wordmark />
           </Link>
 
@@ -56,7 +59,8 @@ export default function SiteNav() {
                 {item.label}
               </a>
             ))}
-            <Link href="/docs"
+            <Link
+              href="/docs"
               className="inline-flex items-center gap-1.5 text-sm text-ink-300 transition-colors duration-200 hover:text-ink-50"
             >
               Docs
@@ -76,15 +80,18 @@ export default function SiteNav() {
               GitHub
               <ArrowUpRight className="size-3.5 opacity-70" />
             </a>
-            <Link href="/contact" className="ll-btn ll-btn-primary min-h-10 px-5 text-sm">
-              Contact sales
+            <Link
+              href="/contact"
+              className="ll-btn ll-btn-primary min-h-10 px-5 text-sm"
+            >
+              Contact
             </Link>
           </div>
 
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             className="ll-btn ll-btn-ghost min-h-10 !px-3 lg:hidden"
           >
@@ -106,7 +113,8 @@ export default function SiteNav() {
                 {item.label}
               </a>
             ))}
-            <Link href="/docs"
+            <Link
+              href="/docs"
               className="flex items-center gap-2 rounded-2xl px-4 py-3 text-[0.95rem] text-ink-100 transition-colors hover:bg-ink-50/5 hover:text-ink-50"
             >
               Docs
@@ -125,13 +133,13 @@ export default function SiteNav() {
               <ArrowUpRight className="size-3.5 opacity-70" />
             </a>
             <Link href="/contact" className="ll-btn ll-btn-primary mt-1 w-full">
-              Contact sales
+              Contact
             </Link>
           </div>
         </div>
       ) : null}
     </header>
-  )
+  );
 }
 
 /**
@@ -147,8 +155,12 @@ function CloudBanner() {
       <div className="ll-shell flex min-h-9 items-center justify-center gap-2 py-1.5 text-center">
         <span className="hidden size-1.5 shrink-0 rounded-full bg-ember-400 sm:inline-flex" />
         <span className="text-[0.75rem] text-ink-100">
-          <span className="font-medium text-ember-200">Local Letter Cloud</span> is coming soon
-          <span className="hidden sm:inline"> — fully managed, nothing to run yourself.</span>
+          <span className="font-medium text-ember-200">Local Letter Cloud</span>{" "}
+          is coming soon
+          <span className="hidden sm:inline">
+            {" "}
+            — fully managed, nothing to run yourself.
+          </span>
         </span>
         <span className="hidden items-center gap-1 text-[0.75rem] text-ember-300 sm:inline-flex">
           Join the waitlist
@@ -156,5 +168,6 @@ function CloudBanner() {
         </span>
       </div>
     </Link>
-  )
+  );
 }
+
