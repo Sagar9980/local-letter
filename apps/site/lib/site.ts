@@ -2,7 +2,7 @@ export const site = {
   name: "Local Letter",
   tagline: "Multi-language email templates, self-hosted.",
   githubUrl: "https://github.com/Sagar9980/local-letter",
-  salesEmail: "conceptcodes2020@gmail.com",
+  contactEmail: "conceptcodes2020@gmail.com",
   /** Kept as data so the nav, footer and CTAs can never drift out of sync. */
   nav: [
     { label: "Features", href: "/#features" },

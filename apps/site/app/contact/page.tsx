@@ -138,11 +138,11 @@ export default function ContactPage() {
             <div className="ll-rule my-10" />
 
             <a
-              href={`mailto:${site.salesEmail}`}
+              href={`mailto:${site.contactEmail}`}
               className="inline-flex items-center gap-2.5 text-[0.9375rem] text-ink-300 transition-colors hover:text-ink-50"
             >
               <Mail className="size-4 text-ember-300" />
-              {site.salesEmail}
+              {site.contactEmail}
             </a>
           </Reveal>
 
@@ -249,7 +249,7 @@ export default function ContactPage() {
                   {status === "error" ? (
                     <p className="rounded-xl bg-seal-500/10 px-4 py-3 text-[0.8125rem] text-seal-400">
                       That did not go through. Email us directly at{" "}
-                      {site.salesEmail}.
+                      {site.contactEmail}.
                     </p>
                   ) : null}
 
