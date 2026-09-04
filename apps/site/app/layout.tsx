@@ -1,65 +1,75 @@
-import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono, Instrument_Serif } from 'next/font/google'
-import SiteNav from '@/components/SiteNav'
-import SiteFooter from '@/components/SiteFooter'
-import './globals.css'
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import SiteNav from "@/components/SiteNav";
+import SiteFooter from "@/components/SiteFooter";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import "./globals.css";
 
 const geistSans = Geist({
-  subsets: ['latin'],
-  variable: '--font-geist-sans',
-  display: 'swap',
-})
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+  display: "swap",
+});
 
 const geistMono = Geist_Mono({
-  subsets: ['latin'],
-  variable: '--font-geist-mono',
-  display: 'swap',
-})
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
 
 const instrumentSerif = Instrument_Serif({
-  subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
-  variable: '--font-instrument-serif',
-  display: 'swap',
-})
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
 
 const description =
-  'Design transactional email templates once, translate them per locale, and render them from any codebase with a typed SDK. Open source, self-hosted — your data never leaves your infrastructure.'
+  "Design transactional email templates once, translate them per locale, and render them from any codebase with a typed SDK. Open source, self-hosted — your data never leaves your infrastructure.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://localletter.dev'),
+  metadataBase: new URL("https://localletter.dev"),
   title: {
-    default: 'Local Letter — Multi-language email templates, self-hosted',
-    template: '%s · Local Letter',
+    default: "Local Letter — Multi-language email templates, self-hosted",
+    template: "%s · Local Letter",
   },
   description,
   openGraph: {
-    title: 'Local Letter — Multi-language email templates, self-hosted',
+    title: "Local Letter — Multi-language email templates, self-hosted",
     description,
-    type: 'website',
-    siteName: 'Local Letter',
+    type: "website",
+    siteName: "Local Letter",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Local Letter — Multi-language email templates, self-hosted',
+    card: "summary_large_image",
+    title: "Local Letter — Multi-language email templates, self-hosted",
     description,
   },
-  icons: { icon: '/mark.svg' },
-}
+  icons: { icon: "/mark.svg" },
+};
 
 export const viewport: Viewport = {
-  themeColor: '#0A0A0C',
-  colorScheme: 'dark',
-}
+  themeColor: "#0A0A0C",
+  colorScheme: "dark",
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  let gaid = process.env.GA_ID;
+  if (!gaid) {
+    console.warn("GA_ID is not set. Google Analytics will not be initialized.");
+  }
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable}`}
     >
       <body>
+        {gaid && <GoogleAnalytics gaId={gaid} />}
         <div className="relative flex min-h-dvh flex-col">
           <a
             href="#main"
@@ -75,5 +85,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
       </body>
     </html>
-  )
+  );
 }
+

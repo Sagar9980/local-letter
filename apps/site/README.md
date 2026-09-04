@@ -16,10 +16,10 @@ pnpm --filter @local-letter/site start
 ## Routes
 
 | Route      | Purpose                                                        |
-|------------|----------------------------------------------------------------|
+| ---------- | -------------------------------------------------------------- |
 | `/`        | Landing page — hero, features, how it works, SDK, self-hosting |
 | `/docs`    | Documentation placeholder while the reference is being written |
-| `/contact` | Contact sales form                                             |
+| `/contact` | Contact form                                                   |
 
 There is deliberately **no pricing page**. Every commercial call to action
 points at `/contact`, and the FAQ says plainly that pricing comes from a
@@ -81,3 +81,4 @@ pnpm dlx shadcn@latest add @watermelon/hero-14
 
 The repo's `.mcp.json` also configures the shadcn MCP server against the same
 registries, which lets an agent browse and install them conversationally.
+
