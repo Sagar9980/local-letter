@@ -1,100 +1,101 @@
-'use client'
+"use client";
 
-import { useState, type FormEvent } from 'react'
-import { motion } from 'motion/react'
-import { Check, Clock, Loader2, Mail, MessageSquare, ShieldCheck } from 'lucide-react'
-import { HorizonGlow } from '@/components/Glow'
-import { Reveal } from '@/components/Reveal'
-import { site } from '@/lib/site'
-import { cn } from '@/lib/utils'
+import { useState, type FormEvent } from "react";
+import { motion } from "motion/react";
+import {
+  Check,
+  Clock,
+  Loader2,
+  Mail,
+  MessageSquare,
+  ShieldCheck,
+} from "lucide-react";
+import { HorizonGlow } from "@/components/Glow";
+import { Reveal } from "@/components/Reveal";
+import { site } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 /**
- * Optional POST target for the form. When it is not configured the form falls
- * back to opening a pre-filled draft in the visitor's own mail client, so the
- * page is never a dead end on a fresh deployment.
+ * POST target for the form. Defaults to the site's own Resend-backed route
+ * handler; override to point at an external form service instead.
  */
-const CONTACT_ENDPOINT = process.env.NEXT_PUBLIC_CONTACT_ENDPOINT as string | undefined
+const CONTACT_ENDPOINT = "/api/contact";
 
-const localeRanges = ['1–2 locales', '3–5 locales', '6–15 locales', '15+ locales']
+const localeRanges = [
+  "1–2 locales",
+  "3–5 locales",
+  "6–15 locales",
+  "15+ locales",
+];
 const interests = [
-  'Local Letter Cloud waitlist',
-  'Self-hosted deployment',
-  'Migrating existing templates',
-  'An SDK for another language',
-  'Security / compliance review',
-]
+  "Local Letter Cloud waitlist",
+  "Self-hosted deployment",
+  "Migrating existing templates",
+  "An SDK for another language",
+  "Security / compliance review",
+];
 
 interface FormState {
-  name: string
-  email: string
-  company: string
-  locales: string
-  interest: string
-  message: string
+  name: string;
+  email: string;
+  company: string;
+  locales: string;
+  interest: string;
+  message: string;
 }
 
 const initialState: FormState = {
-  name: '',
-  email: '',
-  company: '',
+  name: "",
+  email: "",
+  company: "",
   locales: localeRanges[1],
   interest: interests[0],
-  message: '',
-}
+  message: "",
+};
 
 export default function ContactPage() {
-  const [form, setForm] = useState<FormState>(initialState)
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
+  const [form, setForm] = useState<FormState>(initialState);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle",
+  );
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof FormState, string>>
+  >({});
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((prev) => ({ ...prev, [key]: value }))
-    setErrors((prev) => ({ ...prev, [key]: undefined }))
-  }
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
+  };
 
   const validate = () => {
-    const next: Partial<Record<keyof FormState, string>> = {}
-    if (!form.name.trim()) next.name = 'Tell us who we are talking to.'
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'A valid work email, please.'
-    if (form.message.trim().length < 10) next.message = 'A sentence or two about your setup helps.'
-    setErrors(next)
-    return Object.keys(next).length === 0
-  }
+    const next: Partial<Record<keyof FormState, string>> = {};
+    if (!form.name.trim()) next.name = "Tell us who we are talking to.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      next.email = "A valid work email, please.";
+    if (form.message.trim().length < 10)
+      next.message = "A sentence or two about your setup helps.";
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
   const onSubmit = async (event: FormEvent) => {
-    event.preventDefault()
-    if (!validate()) return
-    setStatus('sending')
-
-    const body = [
-      `Name: ${form.name}`,
-      `Email: ${form.email}`,
-      `Company: ${form.company || '—'}`,
-      `Locales: ${form.locales}`,
-      `Interested in: ${form.interest}`,
-      '',
-      form.message,
-    ].join('\n')
+    event.preventDefault();
+    if (!validate()) return;
+    setStatus("sending");
 
     try {
-      if (CONTACT_ENDPOINT) {
-        const response = await fetch(CONTACT_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
-        })
-        if (!response.ok) throw new Error(`Request failed with ${response.status}`)
-      } else {
-        // No endpoint configured — hand the draft to the visitor's mail client.
-        window.location.href = `mailto:${site.salesEmail}?subject=${encodeURIComponent(
-          `Local Letter enquiry — ${form.company || form.name}`,
-        )}&body=${encodeURIComponent(body)}`
-      }
-      setStatus('sent')
+      const response = await fetch(CONTACT_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!response.ok)
+        throw new Error(`Request failed with ${response.status}`);
+      setStatus("sent");
     } catch {
-      setStatus('error')
+      setStatus("error");
     }
-  }
+  };
 
   return (
     <section className="relative isolate overflow-hidden pt-36 pb-28 sm:pt-44">
@@ -110,13 +111,18 @@ export default function ContactPage() {
               <span className="ll-serif ll-gradient-text">who built it</span>
             </h1>
             <p className="mt-6 max-w-md text-[1.0625rem] leading-relaxed text-ink-300">
-              Self-hosting is free — you do not need us to start. Get in touch if you want on
-              the Local Letter Cloud waitlist, need help migrating existing templates, or have a
-              security review to get through. Tell us what you are running and who it is for.
+              Self-hosting is free — you do not need us to start. Get in touch
+              if you want on the Local Letter Cloud waitlist, need help
+              migrating existing templates, or have a security review to get
+              through. Tell us what you are running and who it is for.
             </p>
 
             <div className="mt-10 space-y-5">
-              <Perk icon={Clock} title="A reply within one business day" body="From an engineer, not a form autoresponder." />
+              <Perk
+                icon={Clock}
+                title="A reply within one business day"
+                body="From an engineer, not a form autoresponder."
+              />
               <Perk
                 icon={MessageSquare}
                 title="A working session, not a pitch"
@@ -142,7 +148,7 @@ export default function ContactPage() {
 
           <Reveal delay={0.06}>
             <div className="ll-panel p-7 sm:p-9">
-              {status === 'sent' ? (
+              {status === "sent" ? (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -152,18 +158,16 @@ export default function ContactPage() {
                     <Check className="size-6" />
                   </span>
                   <h2 className="mt-6 text-xl font-medium tracking-[-0.02em] text-ink-50">
-                    {CONTACT_ENDPOINT ? 'Message received' : 'Draft ready in your mail client'}
+                    Message received
                   </h2>
                   <p className="mt-3 max-w-sm text-[0.9375rem] leading-relaxed text-ink-300">
-                    {CONTACT_ENDPOINT
-                      ? 'Thanks — an engineer will reply within one business day.'
-                      : `We opened a pre-filled draft addressed to ${site.salesEmail}. Send it and we will reply within one business day.`}
+                    Thanks — an engineer will reply within one business day.
                   </p>
                   <button
                     type="button"
                     onClick={() => {
-                      setForm(initialState)
-                      setStatus('idle')
+                      setForm(initialState);
+                      setStatus("idle");
                     }}
                     className="ll-btn ll-btn-ghost mt-8"
                   >
@@ -176,7 +180,7 @@ export default function ContactPage() {
                     <Field label="Name" error={errors.name}>
                       <input
                         value={form.name}
-                        onChange={(e) => set('name', e.target.value)}
+                        onChange={(e) => set("name", e.target.value)}
                         placeholder="Sarah Okonkwo"
                         className={inputClass(errors.name)}
                       />
@@ -185,7 +189,7 @@ export default function ContactPage() {
                       <input
                         type="email"
                         value={form.email}
-                        onChange={(e) => set('email', e.target.value)}
+                        onChange={(e) => set("email", e.target.value)}
                         placeholder="sarah@acme.com"
                         className={inputClass(errors.email)}
                       />
@@ -195,7 +199,7 @@ export default function ContactPage() {
                   <Field label="Company" optional>
                     <input
                       value={form.company}
-                      onChange={(e) => set('company', e.target.value)}
+                      onChange={(e) => set("company", e.target.value)}
                       placeholder="Acme"
                       className={inputClass()}
                     />
@@ -207,7 +211,7 @@ export default function ContactPage() {
                         <Chip
                           key={range}
                           active={form.locales === range}
-                          onClick={() => set('locales', range)}
+                          onClick={() => set("locales", range)}
                         >
                           {range}
                         </Chip>
@@ -221,7 +225,7 @@ export default function ContactPage() {
                         <Chip
                           key={interest}
                           active={form.interest === interest}
-                          onClick={() => set('interest', interest)}
+                          onClick={() => set("interest", interest)}
                         >
                           {interest}
                         </Chip>
@@ -229,39 +233,44 @@ export default function ContactPage() {
                     </div>
                   </Field>
 
-                  <Field label="Tell us about your setup" error={errors.message}>
+                  <Field
+                    label="Tell us about your setup"
+                    error={errors.message}
+                  >
                     <textarea
                       value={form.message}
-                      onChange={(e) => set('message', e.target.value)}
+                      onChange={(e) => set("message", e.target.value)}
                       rows={4}
                       placeholder="We send ~200k transactional emails a month across 6 languages, currently hardcoded in two Node services…"
-                      className={cn(inputClass(errors.message), 'resize-none')}
+                      className={cn(inputClass(errors.message), "resize-none")}
                     />
                   </Field>
 
-                  {status === 'error' ? (
+                  {status === "error" ? (
                     <p className="rounded-xl bg-seal-500/10 px-4 py-3 text-[0.8125rem] text-seal-400">
-                      That did not go through. Email us directly at {site.salesEmail}.
+                      That did not go through. Email us directly at{" "}
+                      {site.salesEmail}.
                     </p>
                   ) : null}
 
                   <button
                     type="submit"
-                    disabled={status === 'sending'}
+                    disabled={status === "sending"}
                     className="ll-btn ll-btn-primary w-full disabled:opacity-70"
                   >
-                    {status === 'sending' ? (
+                    {status === "sending" ? (
                       <>
                         <Loader2 className="size-4 animate-spin" />
                         Sending
                       </>
                     ) : (
-                      'Contact sales'
+                      "Contact sales"
                     )}
                   </button>
 
                   <p className="text-center text-[0.75rem] text-ink-500">
-                    We only use this to reply to you. No newsletter, no sequence.
+                    We only use this to reply to you. No newsletter, no
+                    sequence.
                   </p>
                 </form>
               )}
@@ -270,16 +279,17 @@ export default function ContactPage() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function inputClass(error?: string) {
   return cn(
-    'w-full rounded-xl bg-ink-950/60 px-4 py-3 text-[0.9375rem] text-ink-50 placeholder:text-ink-700 transition-shadow duration-200',
-    'shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ink-50)_9%,transparent)]',
-    'focus:outline-none focus:shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ember-400)_45%,transparent)]',
-    error && 'shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-seal-500)_55%,transparent)]',
-  )
+    "w-full rounded-xl bg-ink-950/60 px-4 py-3 text-[0.9375rem] text-ink-50 placeholder:text-ink-700 transition-shadow duration-200",
+    "shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ink-50)_9%,transparent)]",
+    "focus:outline-none focus:shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ember-400)_45%,transparent)]",
+    error &&
+      "shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-seal-500)_55%,transparent)]",
+  );
 }
 
 function Field({
@@ -288,21 +298,27 @@ function Field({
   error,
   optional,
 }: {
-  label: string
-  children: React.ReactNode
-  error?: string
-  optional?: boolean
+  label: string;
+  children: React.ReactNode;
+  error?: string;
+  optional?: boolean;
 }) {
   return (
     <label className="block">
       <span className="mb-2 flex items-baseline gap-2 text-[0.8125rem] font-medium text-ink-100">
         {label}
-        {optional ? <span className="text-[0.6875rem] text-ink-500">optional</span> : null}
+        {optional ? (
+          <span className="text-[0.6875rem] text-ink-500">optional</span>
+        ) : null}
       </span>
       {children}
-      {error ? <span className="mt-1.5 block text-[0.75rem] text-seal-400">{error}</span> : null}
+      {error ? (
+        <span className="mt-1.5 block text-[0.75rem] text-seal-400">
+          {error}
+        </span>
+      ) : null}
     </label>
-  )
+  );
 }
 
 function Chip({
@@ -310,9 +326,9 @@ function Chip({
   onClick,
   children,
 }: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
 }) {
   return (
     <button
@@ -320,15 +336,15 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'rounded-full px-3.5 py-2 text-[0.8125rem] transition-all duration-200',
+        "rounded-full px-3.5 py-2 text-[0.8125rem] transition-all duration-200",
         active
-          ? 'bg-ember-400/14 text-ember-200 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ember-400)_32%,transparent)]'
-          : 'bg-ink-50/4 text-ink-300 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ink-50)_8%,transparent)] hover:bg-ink-50/8 hover:text-ink-100',
+          ? "bg-ember-400/14 text-ember-200 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ember-400)_32%,transparent)]"
+          : "bg-ink-50/4 text-ink-300 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-ink-50)_8%,transparent)] hover:bg-ink-50/8 hover:text-ink-100",
       )}
     >
       {children}
     </button>
-  )
+  );
 }
 
 function Perk({
@@ -336,9 +352,9 @@ function Perk({
   title,
   body,
 }: {
-  icon: typeof Clock
-  title: string
-  body: string
+  icon: typeof Clock;
+  title: string;
+  body: string;
 }) {
   return (
     <div className="flex gap-3.5">
@@ -347,8 +363,11 @@ function Perk({
       </span>
       <div>
         <h3 className="text-[0.9375rem] font-medium text-ink-50">{title}</h3>
-        <p className="mt-1 text-[0.875rem] leading-relaxed text-ink-500">{body}</p>
+        <p className="mt-1 text-[0.875rem] leading-relaxed text-ink-500">
+          {body}
+        </p>
       </div>
     </div>
-  )
+  );
 }
+
