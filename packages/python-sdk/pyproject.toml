@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "local-letter"
+version = "0.1.0"
+description = "Render local-letter email templates and send them via Resend, in one call."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Sagar Dhami", email = "sagardhami2001@gmail.com"}
+    ]
+
+dependencies = [
+    "resend>=2.0.0",
+    "requests>=2.28.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/Sagar9980/local-letter"
+Repository = "https://github.com/Sagar9980/local-letter"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/local_letter"]
