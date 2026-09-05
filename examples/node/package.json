@@ -13,7 +13,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "local-letter": "file:../../packages/sdk",
+    "local-letter": "file:../../packages/node-sdk",
     "dotenv": "^16.4.7",
     "express": "^4.21.2"
   }

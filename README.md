@@ -12,7 +12,8 @@ your infrastructure.
 | [`apps/api`](apps/api)         | Express + Prisma + Postgres API. Auth (better-auth), projects, templates, rendering, API keys. |
 | [`apps/web`](apps/web)         | The authenticated dashboard — React + Vite. Visual template editor (GrapesJS), projects, translations, API keys. |
 | [`apps/site`](apps/site)       | The public marketing site — Next.js (App Router) + Tailwind v4.          |
-| [`packages/sdk`](packages/sdk) | `local-letter` on npm — render a template and send it through Resend in one call. |
+| [`packages/node-sdk`](packages/node-sdk) | `local-letter` on npm — render a template and send it through Resend in one call. |
+| [`packages/python-sdk`](packages/python-sdk) | `local-letter` on PyPI — the same SDK for Python.                       |
 | [`examples/node`](examples/node) | A minimal Node script using the SDK end to end.                        |
 
 ## Requirements
@@ -85,8 +86,9 @@ await letters.send({
 });
 ```
 
-See [packages/sdk](packages/sdk) for the full SDK docs and
-[examples/node](examples/node) for a working example you can run.
+See [packages/node-sdk](packages/node-sdk) (or [packages/python-sdk](packages/python-sdk)
+for Python) for the full SDK docs, and [examples/node](examples/node) for a
+working example you can run.
 
 ## Contributing
 

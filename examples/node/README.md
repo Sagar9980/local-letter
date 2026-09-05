@@ -1,7 +1,7 @@
 # Node / Express example
 
 Uses `local-letter` from a plain Node app. Installed via
-`file:../../packages/sdk`, so it consumes the package's built `dist/` the same
+`file:../../packages/node-sdk`, so it consumes the package's built `dist/` the same
 way an npm install would — if the build output or entry points are wrong, this
 example is where you'll find out.
 

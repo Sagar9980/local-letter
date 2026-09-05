@@ -11,7 +11,7 @@ Follow [Getting started](README.md#getting-started) in the root README:
 `apps/web`, then `pnpm dev`.
 
 You generally only need `apps/api` and `apps/web` running to work on the
-product. `apps/site` (the marketing site) and `packages/sdk` are independent
+product. `apps/site` (the marketing site) and `packages/node-sdk` are independent
 and can be run on their own with `pnpm --filter <name> dev`.
 
 ## Before opening a PR
@@ -33,8 +33,8 @@ description so reviewers know what to expect.
 ## Making changes
 
 - Keep changes scoped to the app(s) they touch. `apps/api`, `apps/web`,
-  `apps/site`, and `packages/sdk` are independently versioned/deployed.
-- If you change the API surface `packages/sdk` or `apps/web` depends on,
+  `apps/site`, and `packages/node-sdk` are independently versioned/deployed.
+- If you change the API surface `packages/node-sdk` or `apps/web` depends on,
   update the caller in the same PR.
 - Match the existing code style in the file/package you're editing rather
   than introducing a new one.
