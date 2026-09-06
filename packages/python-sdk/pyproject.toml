@@ -18,6 +18,9 @@ dependencies = [
     "requests>=2.28.0"
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=8.0.0"]
+
 [project.urls]
 Homepage = "https://github.com/Sagar9980/local-letter"
 Repository = "https://github.com/Sagar9980/local-letter"
