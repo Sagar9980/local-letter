@@ -44,16 +44,22 @@ const { id, subject } = await letters.send({
   {
     id: 'python',
     label: 'Python',
-    status: 'soon',
-    code: `from local_letter import TemplateClient
+    status: 'available',
+    install: 'pip install local-letter',
+    code: `import os
+from local_letter import TemplateClient
 
 letters = TemplateClient(
     base_url=os.environ["LOCAL_LETTER_URL"],
     api_key=os.environ["LOCAL_LETTER_API_KEY"],
+    resend_api_key=os.environ["RESEND_API_KEY"],
+    from_="hello@acme.com",
 )
 
-result = letters.render(
-    "welcome-email",
+# Renders the published "fr" variant, then sends it.
+result = letters.send(
+    template="welcome-email",
+    to="sarah@example.com",
     locale="fr",
     fallback_locale="en",
     variables={"first_name": "Sarah"},
@@ -144,9 +150,9 @@ export default function SdkSection() {
               <span className="ll-serif text-ember-200">Any service.</span>
             </h2>
             <p className="mt-5 max-w-md text-[1.0625rem] leading-relaxed text-ink-300">
-              The Node SDK is shipping today: it renders the template against your instance and
-              hands the result to your mail provider. Everything is a plain authenticated HTTP
-              call underneath, so any language can talk to it right now.
+              The Node and Python SDKs are shipping today: they render the template against your
+              instance and hand the result to your mail provider. Everything is a plain
+              authenticated HTTP call underneath, so any language can talk to it right now.
             </p>
 
             <div className="mt-8 space-y-3">
@@ -160,7 +166,7 @@ export default function SdkSection() {
                 SDKs for other languages are coming
               </p>
               <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-ink-300">
-                Python, Go, Ruby and PHP clients are in progress. Tell us which one you need
+                Go, Ruby and PHP clients are in progress. Tell us which one you need
                 first and we will prioritise it.
               </p>
               <Link href="/contact"
