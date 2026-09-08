@@ -1,0 +1,4 @@
+.env
+# Built binaries from `go build`
+/quickstart
+/server

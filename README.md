@@ -14,8 +14,10 @@ your infrastructure.
 | [`apps/site`](apps/site)       | The public marketing site — Next.js (App Router) + Tailwind v4.          |
 | [`packages/node-sdk`](packages/node-sdk) | `local-letter` on npm — render a template and send it through Resend in one call. |
 | [`packages/python-sdk`](packages/python-sdk) | `local-letter` on PyPI — the same SDK for Python.                       |
+| [`packages/go-sdk`](packages/go-sdk) | The same SDK for Go, served straight from this repo — no registry.      |
 | [`examples/node`](examples/node) | A minimal Node script using the SDK end to end.                        |
 | [`examples/python`](examples/python) | The same, for the Python SDK.                                      |
+| [`examples/go`](examples/go)   | The same, for the Go SDK.                                              |
 
 ## Requirements
 
@@ -87,9 +89,9 @@ await letters.send({
 });
 ```
 
-See [packages/node-sdk](packages/node-sdk) (or [packages/python-sdk](packages/python-sdk)
-for Python) for the full SDK docs, and [examples/node](examples/node) (or
-[examples/python](examples/python)) for a working example you can run.
+The same call exists in Python ([packages/python-sdk](packages/python-sdk)) and
+Go ([packages/go-sdk](packages/go-sdk)) — see each package's README for the full
+docs, and [examples/](examples) for a working app per language you can run.
 
 ## Contributing
 

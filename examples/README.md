@@ -12,9 +12,9 @@ assumes Node, and `examples/` itself holds no build artefacts:
 
 ```
 examples/
-  node/       Node 20+ / Express      (local-letter)
-  python/     (planned)
-  go/         (planned)
+  node/       Node 20+ / Express      (local-letter on npm)
+  python/     Python 3.9+ / Flask     (local-letter on PyPI)
+  go/         Go 1.23+ / net/http     (the go-sdk module, fetched from this repo)
 ```
 
 Every example follows the same two-entry-point convention:
