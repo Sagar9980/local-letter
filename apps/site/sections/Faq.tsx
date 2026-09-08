@@ -26,7 +26,7 @@ const faqs = [
   },
   {
     q: "Which languages will the SDK support?",
-    a: "Node.js is available now. Python, Go, Ruby and PHP clients are in progress. Until those land, every capability is reachable over a plain authenticated HTTP endpoint, so any language can integrate today.",
+    a: "Node.js and Python are available now. Go, Ruby and PHP clients are in progress. Until those land, every capability is reachable over a plain authenticated HTTP endpoint, so any language can integrate today.",
   },
   {
     q: "Where are the docs?",
