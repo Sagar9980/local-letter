@@ -51,12 +51,25 @@ from `nextra/components`; they are not globally available.
 
 ```
 app/
-  layout.tsx            navbar, footer, theme, docsRepositoryBase
+  layout.tsx            navbar, theme, docsRepositoryBase
+  globals.css           the few theme overrides we make
   [[...mdxPath]]/       catch-all that renders content/ through Nextra
 content/                the docs themselves, one .mdx per page
 mdx-components.tsx      merges the docs theme's MDX components
 next.config.mjs         the Nextra plugin
 ```
+
+## Footer
+
+Nextra's `<Footer>` renders a full-width grey band beneath the content, which is
+a lot of chrome for one line of copyright. The `footer` prop is dropped in
+`app/layout.tsx`, and the notice is attached instead to the sidebar's own footer
+row — the strip that already holds the theme switch and collapse button.
+
+The theme exposes no slot there, so it goes in as a `::before` in
+`app/globals.css`, hidden while the sidebar is collapsed to icon width. If a
+Nextra upgrade renames `.nextra-sidebar-footer`, the line quietly disappears
+rather than breaking the page.
 
 ## Search
 

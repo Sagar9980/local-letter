@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import { Footer, Layout, Navbar } from 'nextra-theme-docs'
+import { Layout, Navbar } from 'nextra-theme-docs'
 import { Head } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import 'nextra-theme-docs/style.css'
+import './globals.css'
 
 const githubUrl = 'https://github.com/Sagar9980/local-letter'
 
@@ -28,16 +29,6 @@ const navbar = (
   />
 )
 
-const footer = (
-  <Footer>
-    MIT {new Date().getFullYear()} ©{' '}
-    <a href={githubUrl} target="_blank" rel="noreferrer">
-      Local Letter
-    </a>
-    .
-  </Footer>
-)
-
 export default async function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
@@ -45,7 +36,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <Layout
           navbar={navbar}
-          footer={footer}
           pageMap={await getPageMap()}
           docsRepositoryBase={`${githubUrl}/blob/main/apps/docs`}
           editLink="Edit this page on GitHub"

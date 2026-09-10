@@ -1,0 +1,29 @@
+/*
+ * Nextra's `<Footer>` renders a full-width grey band under the content, which
+ * is a lot of chrome for one line of copyright. `layout.tsx` drops the `footer`
+ * prop entirely and the notice is attached to the sidebar's own footer row
+ * instead — the strip that already holds the theme switch and collapse button.
+ *
+ * The theme gives that row no slot for extra content, so it goes in as a
+ * pseudo-element. `order`/`flex-basis` put it on its own line above the
+ * controls; the `justify-center` guard is the class Nextra adds only while the
+ * sidebar is collapsed to icon width, where the text wouldn't fit.
+ */
+.nextra-sidebar-footer {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+
+.nextra-sidebar-footer:not([class~="x:justify-center"])::before {
+  content: "MIT © Local Letter";
+  order: -1;
+  flex-basis: 100%;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: #6b7280; /* gray-500, matching the controls it sits above */
+}
+
+.dark .nextra-sidebar-footer:not([class~="x:justify-center"])::before {
+  color: #9ca3af; /* gray-400 */
+}
