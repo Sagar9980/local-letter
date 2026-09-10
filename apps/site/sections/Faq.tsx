@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "Where are the docs?",
-    a: "Full documentation is being written and will land at /docs. In the meantime, contact usand we will walk your team through deployment, template modelling and SDK integration directly.",
+    a: "Live now at [docs.local-letter.sagardhami.com](https://docs.local-letter.sagardhami.com) — installation, template modelling, locale fallback, every SDK method and the full HTTP reference. If your team would rather be walked through it, [contact us](/contact) and we will do that directly.",
   },
   {
     q: "What does it cost?",

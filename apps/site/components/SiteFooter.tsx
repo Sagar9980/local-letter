@@ -1,9 +1,19 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
-import { site } from "@/lib/site";
+import { docsLinks, site } from "@/lib/site";
 
-const columns = [
+type FooterLink = {
+  label: string;
+  /** Internal route, rendered through next/link. */
+  to?: string;
+  /** Page anchor or absolute URL, rendered as a plain anchor. */
+  href?: string;
+  note?: string;
+  external?: boolean;
+};
+
+const columns: { title: string; links: FooterLink[] }[] = [
   {
     title: "Product",
     links: [
@@ -18,9 +28,10 @@ const columns = [
   {
     title: "Developers",
     links: [
-      { label: "Documentation", to: "/docs", note: "Soon" },
-      { label: "Node SDK", href: "/#sdk" },
-      { label: "Other languages", href: "/#sdk", note: "Soon" },
+      { label: "Documentation", href: site.docsUrl, external: true },
+      { label: "Getting started", href: docsLinks.gettingStarted, external: true },
+      { label: "SDK reference", href: docsLinks.sdkNode, external: true },
+      { label: "API reference", href: docsLinks.apiReference, external: true },
       { label: "GitHub", href: site.githubUrl, external: true },
     ],
   },
@@ -32,7 +43,7 @@ const columns = [
       { label: "Security & data residency", href: "/#self-host" },
     ],
   },
-] as const;
+];
 
 export default function SiteFooter() {
   return (
@@ -60,29 +71,25 @@ export default function SiteFooter() {
               <ul className="mt-4 space-y-3">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    {"to" in link && link.to ? (
+                    {link.to ? (
                       <Link
                         href={link.to}
                         className="inline-flex items-center gap-2 text-sm text-ink-500 transition-colors hover:text-ink-100"
                       >
                         {link.label}
-                        {"note" in link && link.note ? (
-                          <Note>{link.note}</Note>
-                        ) : null}
+                        {link.note ? <Note>{link.note}</Note> : null}
                       </Link>
                     ) : (
                       <a
-                        href={"href" in link ? link.href : "#"}
-                        {...("external" in link && link.external
+                        href={link.href ?? "#"}
+                        {...(link.external
                           ? { target: "_blank", rel: "noreferrer" }
                           : {})}
                         className="inline-flex items-center gap-2 text-sm text-ink-500 transition-colors hover:text-ink-100"
                       >
                         {link.label}
-                        {"note" in link && link.note ? (
-                          <Note>{link.note}</Note>
-                        ) : null}
-                        {"external" in link && link.external ? (
+                        {link.note ? <Note>{link.note}</Note> : null}
+                        {link.external ? (
                           <ArrowUpRight className="size-3 opacity-60" />
                         ) : null}
                       </a>

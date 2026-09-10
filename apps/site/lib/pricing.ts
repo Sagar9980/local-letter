@@ -1,3 +1,5 @@
+import { site } from './site'
+
 export interface Tier {
   id: 'oss' | 'cloud'
   name: string
@@ -11,6 +13,7 @@ export interface Tier {
   ctaExternal?: boolean
   secondaryLabel?: string
   secondaryHref?: string
+  secondaryExternal?: boolean
   includes: string[]
 }
 
@@ -28,7 +31,8 @@ export const tiers: Tier[] = [
     ctaHref: 'https://github.com/Sagar9980/local-letter',
     ctaExternal: true,
     secondaryLabel: 'Read the docs',
-    secondaryHref: '/docs',
+    secondaryHref: site.docsUrl,
+    secondaryExternal: true,
     includes: [
       'Unlimited templates, locales and projects',
       'Visual drag-and-drop email editor',

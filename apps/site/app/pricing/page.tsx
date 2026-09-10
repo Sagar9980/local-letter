@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, Check, Minus } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Check, Minus } from 'lucide-react'
 import { HorizonGlow } from '@/components/Glow'
 import { Reveal, RevealGroup, RevealItem } from '@/components/Reveal'
 import { GithubIcon } from '@/components/BrandIcons'
@@ -217,9 +217,21 @@ function TierCard({ tier }: { tier: Tier }) {
           </Link>
         )}
         {tier.secondaryLabel && tier.secondaryHref ? (
-          <Link href={tier.secondaryHref} className="ll-btn ll-btn-ghost">
-            {tier.secondaryLabel}
-          </Link>
+          tier.secondaryExternal ? (
+            <a
+              href={tier.secondaryHref}
+              target="_blank"
+              rel="noreferrer"
+              className="ll-btn ll-btn-ghost"
+            >
+              {tier.secondaryLabel}
+              <ArrowUpRight className="size-3.5 opacity-70" />
+            </a>
+          ) : (
+            <Link href={tier.secondaryHref} className="ll-btn ll-btn-ghost">
+              {tier.secondaryLabel}
+            </Link>
+          )
         ) : null}
       </div>
 

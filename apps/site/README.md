@@ -18,7 +18,7 @@ pnpm --filter @local-letter/site start
 | Route      | Purpose                                                        |
 | ---------- | -------------------------------------------------------------- |
 | `/`        | Landing page — hero, features, how it works, SDK, self-hosting |
-| `/docs`    | Documentation placeholder while the reference is being written |
+| `/docs`    | 308 redirect to the docs site — see `next.config.ts`           |
 | `/contact` | Contact form                                                   |
 
 There is deliberately **no pricing page**. Every commercial call to action
@@ -43,12 +43,13 @@ contact form.
 
 Copy that appears in more than one place is defined once:
 
-- `lib/site.ts` — nav items, GitHub URL, sales address
+- `lib/site.ts` — nav items, GitHub URL, sales address, and `docsUrl` /
+  `docsLinks`, which every "Docs" link and the `/docs` redirect read from
 - `lib/locales.ts` — the sample template behind every email preview
 - Section files own their own lists (features, steps, FAQ, …)
 
-Backticks in that copy render as inline code via `components/RichText.tsx`, so
-prose can be authored as plain strings.
+`components/RichText.tsx` renders backticks in that copy as inline code and
+`[markdown](links)` as anchors, so prose can be authored as plain strings.
 
 ## Contact form
 
