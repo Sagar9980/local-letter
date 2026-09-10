@@ -86,7 +86,7 @@ the page. Both themes clear 4.5:1 on links (5.2:1 light, 10.7:1 dark).
 
 Set `NEXT_PUBLIC_DOCS_URL` to the origin these docs are served from — canonical
 links, `og:url`, the social card, `sitemap.xml` and `robots.txt` are all built
-against it, and it defaults to `https://docs.localletter.dev`. See
+against it, and it defaults to `https://docs.local-letter.sagardhami.com`. See
 `.env.example`.
 
 Titles and descriptions come from each page's frontmatter. Next.js applies the

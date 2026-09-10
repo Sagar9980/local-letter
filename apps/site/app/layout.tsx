@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import SiteNav from "@/components/SiteNav";
+import { site } from "@/lib/site";
 import SiteFooter from "@/components/SiteFooter";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
@@ -29,21 +30,32 @@ const description =
   "Design transactional email templates once, translate them per locale, and render them from any codebase with a typed SDK. Open source, self-hosted — your data never leaves your infrastructure.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://localletter.dev"),
+  metadataBase: new URL(site.url),
   title: {
     default: "Local Letter — Multi-language email templates, self-hosted",
     template: "%s · Local Letter",
   },
   description,
+  // Resolved against metadataBase, so each route gets its own absolute URL.
+  alternates: { canonical: "./" },
   openGraph: {
-    title: "Local Letter — Multi-language email templates, self-hosted",
+    // Templated like `title`, so a page unfurls under its own name instead of
+    // the site default.
+    title: {
+      default: "Local Letter — Multi-language email templates, self-hosted",
+      template: "%s · Local Letter",
+    },
     description,
     type: "website",
     siteName: "Local Letter",
+    url: "./",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Local Letter — Multi-language email templates, self-hosted",
+    title: {
+      default: "Local Letter — Multi-language email templates, self-hosted",
+      template: "%s · Local Letter",
+    },
     description,
   },
   icons: { icon: "/mark.svg" },

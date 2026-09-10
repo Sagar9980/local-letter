@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Plus } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import RichText from "@/components/RichText";
+import { docsLinks, site } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 const faqs = [
@@ -25,12 +26,12 @@ const faqs = [
     a: "One key per project. Keys are hashed at rest and shown exactly once at creation. A key can only read templates in its own project, and revoking takes effect on the next request.",
   },
   {
-    q: "Which languages will the SDK support?",
-    a: "Node.js and Python are available now. Go, Ruby and PHP clients are in progress. Until those land, every capability is reachable over a plain authenticated HTTP endpoint, so any language can integrate today.",
+    q: "Which languages does the SDK support?",
+    a: `Node.js, Python and Go are available now, each documented in the [SDK reference](${docsLinks.sdkNode}). Ruby and PHP clients are in progress. Until those land, every capability is reachable over a plain authenticated HTTP endpoint, so any language can integrate today.`,
   },
   {
     q: "Where are the docs?",
-    a: "Full documentation is being written and will land at /docs. In the meantime, contact usand we will walk your team through deployment, template modelling and SDK integration directly.",
+    a: `Live now at [${site.docsUrl.replace("https://", "")}](${site.docsUrl}) — installation, template modelling, locale fallback, every SDK method and the full HTTP reference. If your team would rather be walked through it, [contact us](/contact) and we will do that directly.`,
   },
   {
     q: "What does it cost?",

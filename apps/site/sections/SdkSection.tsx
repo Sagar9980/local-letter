@@ -68,19 +68,24 @@ result = letters.send(
   {
     id: 'go',
     label: 'Go',
-    status: 'soon',
-    code: `package main
+    status: 'available',
+    install: 'go get github.com/Sagar9980/local-letter/packages/go-sdk',
+    code: `import localletter "github.com/Sagar9980/local-letter/packages/go-sdk"
 
-import "github.com/local-letter/go-sdk/letters"
-
-client := letters.New(letters.Config{
-    BaseURL: os.Getenv("LOCAL_LETTER_URL"),
-    APIKey:  os.Getenv("LOCAL_LETTER_API_KEY"),
+letters, err := localletter.New(localletter.Options{
+    BaseURL:      os.Getenv("LOCAL_LETTER_URL"),
+    APIKey:       os.Getenv("LOCAL_LETTER_API_KEY"),
+    ResendAPIKey: os.Getenv("RESEND_API_KEY"),
+    From:         "hello@acme.com",
 })
 
-out, err := client.Render(ctx, "welcome-email", letters.Options{
-    Locale:    "fr",
-    Variables: map[string]any{"first_name": "Sarah"},
+// Renders the published "fr" variant, then sends it.
+result, err := letters.Send(ctx, localletter.SendOptions{
+    Template:       "welcome-email",
+    To:             []string{"sarah@example.com"},
+    Locale:         "fr",
+    FallbackLocale: "en",
+    Variables:      map[string]any{"first_name": "Sarah"},
 })`,
   },
   {
@@ -150,8 +155,8 @@ export default function SdkSection() {
               <span className="ll-serif text-ember-200">Any service.</span>
             </h2>
             <p className="mt-5 max-w-md text-[1.0625rem] leading-relaxed text-ink-300">
-              The Node and Python SDKs are shipping today: they render the template against your
-              instance and hand the result to your mail provider. Everything is a plain
+              The Node, Python and Go SDKs are shipping today: they render the template against
+              your instance and hand the result to your mail provider. Everything is a plain
               authenticated HTTP call underneath, so any language can talk to it right now.
             </p>
 
@@ -166,7 +171,7 @@ export default function SdkSection() {
                 SDKs for other languages are coming
               </p>
               <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-ink-300">
-                Go, Ruby and PHP clients are in progress. Tell us which one you need
+                Ruby and PHP clients are in progress. Tell us which one you need
                 first and we will prioritise it.
               </p>
               <Link href="/contact"

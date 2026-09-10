@@ -1,16 +1,23 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, Check, Minus } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Check, Minus } from 'lucide-react'
 import { HorizonGlow } from '@/components/Glow'
 import { Reveal, RevealGroup, RevealItem } from '@/components/Reveal'
 import { GithubIcon } from '@/components/BrandIcons'
 import { comparison, tiers, type Tier } from '@/lib/pricing'
 import { cn } from '@/lib/utils'
 
+const title = 'Pricing'
+const description =
+  'Local Letter is free and open source to self-host, with no seat counts, send limits or feature gates. Local Letter Cloud — the fully managed version — is coming soon.'
+
 export const metadata: Metadata = {
-  title: 'Pricing',
-  description:
-    'Local Letter is free and open source to self-host, with no seat counts, send limits or feature gates. Local Letter Cloud — the fully managed version — is coming soon.',
+  title,
+  description,
+  // Next applies the root layout's openGraph.title template to a page's
+  // openGraph.title, not to its `title`, so each page restates both.
+  openGraph: { title, description },
+  twitter: { title, description },
 }
 
 const assurances = [
@@ -217,9 +224,21 @@ function TierCard({ tier }: { tier: Tier }) {
           </Link>
         )}
         {tier.secondaryLabel && tier.secondaryHref ? (
-          <Link href={tier.secondaryHref} className="ll-btn ll-btn-ghost">
-            {tier.secondaryLabel}
-          </Link>
+          tier.secondaryExternal ? (
+            <a
+              href={tier.secondaryHref}
+              target="_blank"
+              rel="noreferrer"
+              className="ll-btn ll-btn-ghost"
+            >
+              {tier.secondaryLabel}
+              <ArrowUpRight className="size-3.5 opacity-70" />
+            </a>
+          ) : (
+            <Link href={tier.secondaryHref} className="ll-btn ll-btn-ghost">
+              {tier.secondaryLabel}
+            </Link>
+          )
         ) : null}
       </div>
 

@@ -15,15 +15,16 @@ pnpm --filter @local-letter/site start
 
 ## Routes
 
-| Route      | Purpose                                                        |
-| ---------- | -------------------------------------------------------------- |
-| `/`        | Landing page — hero, features, how it works, SDK, self-hosting |
-| `/docs`    | Documentation placeholder while the reference is being written |
-| `/contact` | Contact form                                                   |
+| Route      | Purpose                                                          |
+| ---------- | ---------------------------------------------------------------- |
+| `/`        | Landing page — hero, features, how it works, SDK, self-hosting   |
+| `/pricing` | Open source vs. Local Letter Cloud, plus the comparison table    |
+| `/contact` | Contact form                                                     |
+| `/docs`    | 308 redirect to the docs site — see `next.config.ts`             |
 
-There is deliberately **no pricing page**. Every commercial call to action
-points at `/contact`, and the FAQ says plainly that pricing comes from a
-conversation.
+`/pricing` states the open source tier's price (free, MIT) and nothing else:
+Cloud is unpriced until launch, and both its calls to action point at
+`/contact`. Tiers and the comparison table are data in `lib/pricing.ts`.
 
 ## Structure
 
@@ -43,12 +44,15 @@ contact form.
 
 Copy that appears in more than one place is defined once:
 
-- `lib/site.ts` — nav items, GitHub URL, sales address
+- `lib/site.ts` — site URL, nav items, GitHub URL, sales address, and
+  `docsUrl` / `docsLinks`, which every "Docs" link and the `/docs` redirect
+  read from
+- `lib/pricing.ts` — the two tiers and the comparison table
 - `lib/locales.ts` — the sample template behind every email preview
 - Section files own their own lists (features, steps, FAQ, …)
 
-Backticks in that copy render as inline code via `components/RichText.tsx`, so
-prose can be authored as plain strings.
+`components/RichText.tsx` renders backticks in that copy as inline code and
+`[markdown](links)` as anchors, so prose can be authored as plain strings.
 
 ## Contact form
 

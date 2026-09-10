@@ -59,15 +59,15 @@ export default function SiteNav() {
                 {item.label}
               </a>
             ))}
-            <Link
-              href="/docs"
-              className="inline-flex items-center gap-1.5 text-sm text-ink-300 transition-colors duration-200 hover:text-ink-50"
+            <a
+              href={site.docsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-ink-300 transition-colors duration-200 hover:text-ink-50"
             >
               Docs
-              <span className="rounded-full bg-ember-400/12 px-1.5 py-0.5 text-[0.625rem] font-medium tracking-wide text-ember-300">
-                SOON
-              </span>
-            </Link>
+              <ArrowUpRight className="size-3.5 opacity-70" />
+            </a>
           </div>
 
           <div className="hidden items-center gap-3 lg:flex">
@@ -113,15 +113,16 @@ export default function SiteNav() {
                 {item.label}
               </a>
             ))}
-            <Link
-              href="/docs"
-              className="flex items-center gap-2 rounded-2xl px-4 py-3 text-[0.95rem] text-ink-100 transition-colors hover:bg-ink-50/5 hover:text-ink-50"
+            <a
+              href={site.docsUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-1.5 rounded-2xl px-4 py-3 text-[0.95rem] text-ink-100 transition-colors hover:bg-ink-50/5 hover:text-ink-50"
             >
               Docs
-              <span className="rounded-full bg-ember-400/12 px-1.5 py-0.5 text-[0.625rem] font-medium text-ember-300">
-                SOON
-              </span>
-            </Link>
+              <ArrowUpRight className="size-3.5 opacity-60" />
+            </a>
             <div className="ll-rule my-2" />
             <a
               href={site.githubUrl}
