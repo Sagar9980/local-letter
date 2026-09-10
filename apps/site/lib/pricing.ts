@@ -40,7 +40,7 @@ export const tiers: Tier[] = [
       'Typed variable schemas and validation',
       'Draft, publish and version rollback',
       'Scoped API keys, hashed at rest',
-      'Node SDK and HTTP render API',
+      'Node, Python and Go SDKs, plus the HTTP render API',
       'Your Postgres, your network, your backups',
       'Community support on GitHub',
     ],
@@ -80,7 +80,7 @@ export interface ComparisonRow {
 export const comparison: ComparisonRow[] = [
   { label: 'Templates, locales and projects', oss: 'Unlimited', cloud: 'Unlimited' },
   { label: 'Visual editor and versioning', oss: true, cloud: true },
-  { label: 'Node SDK and HTTP API', oss: true, cloud: true },
+  { label: 'Node, Python and Go SDKs, HTTP API', oss: true, cloud: true },
   { label: 'Where your data lives', oss: 'Your infrastructure', cloud: 'EU or US region' },
   { label: 'Who runs upgrades and backups', oss: 'You', cloud: 'We do' },
   { label: 'SSO and SCIM', oss: false, cloud: true },

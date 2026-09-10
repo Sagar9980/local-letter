@@ -1,5 +1,12 @@
 export const site = {
   name: "Local Letter",
+  /**
+   * Public origin this site is served from. Canonical links and og:url are
+   * resolved against it, so it has to be the real origin in production —
+   * see .env.example.
+   */
+  url:
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://local-letter.sagardhami.com",
   tagline: "Multi-language email templates, self-hosted.",
   githubUrl: "https://github.com/Sagar9980/local-letter",
   /**

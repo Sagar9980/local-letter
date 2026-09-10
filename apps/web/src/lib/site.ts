@@ -2,6 +2,6 @@
 export const site = {
   name: "Local Letter",
   tagline: "Multi-language email templates, self-hosted.",
-  marketingUrl: "https://localletter.dev",
+  marketingUrl: "https://local-letter.sagardhami.com",
   githubUrl: "https://github.com/Sagar9980/local-letter",
 } as const

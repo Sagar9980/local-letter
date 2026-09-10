@@ -7,10 +7,17 @@ import { GithubIcon } from '@/components/BrandIcons'
 import { comparison, tiers, type Tier } from '@/lib/pricing'
 import { cn } from '@/lib/utils'
 
+const title = 'Pricing'
+const description =
+  'Local Letter is free and open source to self-host, with no seat counts, send limits or feature gates. Local Letter Cloud — the fully managed version — is coming soon.'
+
 export const metadata: Metadata = {
-  title: 'Pricing',
-  description:
-    'Local Letter is free and open source to self-host, with no seat counts, send limits or feature gates. Local Letter Cloud — the fully managed version — is coming soon.',
+  title,
+  description,
+  // Next applies the root layout's openGraph.title template to a page's
+  // openGraph.title, not to its `title`, so each page restates both.
+  openGraph: { title, description },
+  twitter: { title, description },
 }
 
 const assurances = [
