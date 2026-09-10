@@ -12,6 +12,7 @@ your infrastructure.
 | [`apps/api`](apps/api)         | Express + Prisma + Postgres API. Auth (better-auth), projects, templates, rendering, API keys. |
 | [`apps/web`](apps/web)         | The authenticated dashboard — React + Vite. Visual template editor (GrapesJS), projects, translations, API keys. |
 | [`apps/site`](apps/site)       | The public marketing site — Next.js (App Router) + Tailwind v4.          |
+| [`apps/docs`](apps/docs)       | The documentation site — Next.js (App Router) + Nextra.                 |
 | [`packages/node-sdk`](packages/node-sdk) | `local-letter` on npm — render a template and send it through Resend in one call. |
 | [`packages/python-sdk`](packages/python-sdk) | `local-letter` on PyPI — the same SDK for Python.                       |
 | [`packages/go-sdk`](packages/go-sdk) | The same SDK for Go, served straight from this repo — no registry.      |
@@ -56,8 +57,9 @@ pnpm dev
 ```
 
 This starts the API on `http://localhost:4000`, the dashboard on
-`http://localhost:5173`, and the marketing site on `http://localhost:5174`
-(via [Turborepo](https://turbo.build)). To run a single app, use
+`http://localhost:5173`, the marketing site on `http://localhost:5174`, and the
+docs on `http://localhost:5175` (via [Turborepo](https://turbo.build)). To run a
+single app, use
 `pnpm --filter <name> dev` (e.g. `pnpm --filter @local-letter/web dev`).
 
 Other root scripts — `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`

@@ -1,0 +1,201 @@
+---
+title: Send your first email
+description: Create a project, add a template, mint an API key, and send a localised email with the Local Letter SDK.
+---
+
+import { Callout, Steps, Tabs } from 'nextra/components'
+
+# Send your first email
+
+This walks the whole path once: dashboard → template → API key → a `send()`
+call from your own backend. It assumes the stack is
+[running locally](/getting-started/installation).
+
+You will also need a [Resend](https://resend.com) API key. Local Letter renders
+the email; Resend delivers it. The key is used by the SDK on your server and is
+never sent to Local Letter.
+
+<Steps>
+
+### Create an account
+
+Open the dashboard at `http://localhost:5173` and sign up. Accounts are stored
+in your own database — there is no hosted tenant.
+
+### Create a project
+
+A project owns templates and API keys. Give it a name; the slug is derived from
+it (lowercase, `a–z0–9-`) and is what URLs use.
+
+```json
+{ "name": "Acme", "slug": "acme" }
+```
+
+See [Projects](/concepts/projects) for how slugs and ownership work.
+
+### Add a template
+
+Create a template with a name and a **key** — the key is what your code will
+reference forever, so pick something stable like `welcome-email`. Keys must
+match `^[a-z0-9-]+$` and are unique within a project.
+
+New templates start with a single `en` locale, marked as the default. Design the
+subject and body in the visual editor, using `{{token}}` placeholders wherever a
+value comes from your app:
+
+```text
+Subject:  Welcome aboard, {{first_name}}
+Body:     Hi {{first_name}}, thanks for joining {{company}}.
+```
+
+<Callout type="info">
+  In a hurry? The dashboard ships with a [template
+  library](/concepts/template-library) — fourteen packs of ready-made emails you
+  can import into a project and edit.
+</Callout>
+
+### Add a translation
+
+Add a locale (say `fr`) to the same template, optionally copying the English
+version so translators start from the built layout rather than a blank canvas.
+Same tokens, translated copy:
+
+```text
+Subject:  Bienvenue, {{first_name}}
+```
+
+Details in [Locales](/concepts/locales).
+
+### Create an API key
+
+On the project's **API Keys** page, create a key and copy it immediately — the
+raw value is shown once and never again. Afterwards only a prefix and the first
+few characters are stored for identification.
+
+Put it in your app's environment:
+
+```bash filename=".env"
+LOCAL_LETTER_API_KEY="..."
+RESEND_API_KEY="..."
+```
+
+### Send it
+
+<Tabs items={['Node', 'Python', 'Go']}>
+<Tabs.Tab>
+
+```bash
+npm install local-letter
+```
+
+```ts filename="send.ts"
+import { TemplateClient } from 'local-letter'
+
+const letters = new TemplateClient({
+  baseUrl: 'http://localhost:4000',
+  apiKey: process.env.LOCAL_LETTER_API_KEY!,
+  resendApiKey: process.env.RESEND_API_KEY!,
+  from: 'hello@yourcompany.com',
+})
+
+const result = await letters.send({
+  template: 'welcome-email',
+  to: 'customer@example.com',
+  variables: { first_name: 'Sagar', company: 'Acme' },
+  locale: 'fr',
+  fallbackLocale: 'en',
+})
+
+console.log(result.id, result.locale)
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```bash
+pip install local-letter
+```
+
+```python filename="send.py"
+import os
+from local_letter import TemplateClient
+
+letters = TemplateClient(
+    base_url="http://localhost:4000",
+    api_key=os.environ["LOCAL_LETTER_API_KEY"],
+    resend_api_key=os.environ["RESEND_API_KEY"],
+    from_="hello@yourcompany.com",
+)
+
+result = letters.send(
+    template="welcome-email",
+    to="customer@example.com",
+    variables={"first_name": "Sagar", "company": "Acme"},
+    locale="fr",
+    fallback_locale="en",
+)
+
+print(result.id, result.locale)
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```bash
+go get github.com/Sagar9980/local-letter/packages/go-sdk
+```
+
+```go filename="main.go"
+letters, err := localletter.New(localletter.Options{
+    BaseURL:      "http://localhost:4000",
+    APIKey:       os.Getenv("LOCAL_LETTER_API_KEY"),
+    ResendAPIKey: os.Getenv("RESEND_API_KEY"),
+    From:         "hello@yourcompany.com",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+result, err := letters.Send(context.Background(), localletter.SendOptions{
+    Template:       "welcome-email",
+    To:             []string{"customer@example.com"},
+    Variables:      map[string]any{"first_name": "Sagar", "company": "Acme"},
+    Locale:         "fr",
+    FallbackLocale: "en",
+})
+```
+
+</Tabs.Tab>
+</Tabs>
+
+</Steps>
+
+## What just happened
+
+1. The SDK `POST`ed to `/v1/render/welcome-email` with your API key, the
+   variables and the locale.
+2. The API found the template in the project that key belongs to, picked the
+   `fr` locale, and substituted every `{{token}}` it had a value for.
+3. The SDK handed the rendered subject and HTML to Resend from your server.
+4. You got back the Resend message id, plus the locale that actually shipped —
+   `result.locale`, which may be your fallback if `fr` didn't exist.
+
+## Sending fails?
+
+| Symptom | Usual cause |
+| ------- | ----------- |
+| `401 Invalid API key` | Key was revoked, or copied with whitespace around it. |
+| `403 API key is not linked to a project` | Key exists but has no project. Create a new one from a project's API Keys page. |
+| `404 Template not found` | The template key doesn't exist in that key's project. |
+| `404 No locale available for this template` | The template has no locale rows at all. |
+| Resend rejects the send | Usually an unverified sender domain — check `from`. |
+
+Full error semantics per language: [Node](/sdks/node#errors),
+[Python](/sdks/python#errors), [Go](/sdks/go#errors).
+
+## Next
+
+- Working end-to-end apps per language live in
+  [`examples/`](https://github.com/Sagar9980/local-letter/tree/main/examples).
+- [How locale fallback resolves](/concepts/locales)
+- [The render endpoint, without an SDK](/api-reference/render)

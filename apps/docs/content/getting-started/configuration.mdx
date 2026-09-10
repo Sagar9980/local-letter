@@ -1,0 +1,75 @@
+---
+title: Configuration
+description: Every environment variable read by the Local Letter API, dashboard and marketing site.
+---
+
+import { Callout } from 'nextra/components'
+
+# Configuration
+
+Every app reads its configuration from environment variables, with an
+`.env.example` checked in next to it. Nothing is read from a config file.
+
+## API — `apps/api/.env`
+
+| Variable | Required | Default | What it does |
+| -------- | -------- | ------- | ------------ |
+| `DATABASE_URL` | Yes | — | Postgres connection string. Prisma reads this for both migrations and runtime. |
+| `BETTER_AUTH_SECRET` | Yes | — | Signing secret for sessions and API keys. Any long random string; `openssl rand -base64 32` is fine. |
+| `BETTER_AUTH_URL` | Yes | `http://localhost:4000` | Public URL of the API itself, used to build auth callback URLs. |
+| `WEB_ORIGIN` | Yes | `http://localhost:5173` | Origin allowed by CORS and permitted to send session cookies. Must be the dashboard's exact origin. |
+| `PORT` | No | `4000` | Port the API listens on. |
+
+```bash filename="apps/api/.env"
+PORT=4000
+DATABASE_URL="postgresql://user:password@localhost:5432/local_letter"
+BETTER_AUTH_SECRET="replace-with-a-long-random-secret"
+BETTER_AUTH_URL="http://localhost:4000"
+WEB_ORIGIN="http://localhost:5173"
+```
+
+<Callout type="warning">
+  Changing `BETTER_AUTH_SECRET` invalidates every existing session **and** every
+  issued API key. Treat it as a one-time value per environment, and rotate it
+  only when you're ready to re-issue keys.
+</Callout>
+
+## Dashboard — `apps/web/.env`
+
+| Variable | Required | Default | What it does |
+| -------- | -------- | ------- | ------------ |
+| `VITE_API_URL` | Yes | `http://localhost:4000` | Where the browser sends dashboard requests. Must match `BETTER_AUTH_URL` on the API. |
+
+```bash filename="apps/web/.env"
+VITE_API_URL="http://localhost:4000"
+```
+
+Vite inlines `VITE_*` variables at build time, so this is baked into the bundle
+— a different API URL means a different build.
+
+## Marketing site — `apps/site/.env`
+
+Optional; only needed if you run the public site.
+
+| Variable | Required | What it does |
+| -------- | -------- | ------------ |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | No | Contact address shown on the site. |
+| `GA_ID` | No | Google Analytics measurement id. Analytics are skipped when unset. |
+| `RESEND_API_KEY` | For the contact form | Lets `/api/contact` deliver form submissions. |
+| `CONTACT_FROM_EMAIL` | No | Sender for contact-form mail. Must be on a Resend-verified domain, or `onboarding@resend.dev`. |
+
+## Your application
+
+These belong to *your* backend, not to Local Letter, but the SDKs expect them by
+convention:
+
+| Variable | What it does |
+| -------- | ------------ |
+| `LOCAL_LETTER_API_KEY` | The project API key you minted in the dashboard. |
+| `RESEND_API_KEY` | Your Resend key. Used by the SDK to deliver; never sent to Local Letter. |
+
+<Callout type="info">
+  `.env` files are gitignored across the repo; `.env.example` files are not.
+  When you add a variable, add it to the example file in the same commit so the
+  next person knows it exists.
+</Callout>

@@ -1,0 +1,33 @@
+{
+  "name": "@local-letter/docs",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Local Letter's documentation site — Next.js + Nextra.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sagar9980/local-letter.git",
+    "directory": "apps/docs"
+  },
+  "scripts": {
+    "dev": "next dev --port 5175",
+    "build": "next build",
+    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
+    "start": "next start --port 5175",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^16.3.3",
+    "nextra": "^4.6.1",
+    "nextra-theme-docs": "^4.6.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "pagefind": "^1.4.0",
+    "typescript": "~6.0.2"
+  }
+}

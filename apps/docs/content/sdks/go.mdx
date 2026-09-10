@@ -1,0 +1,186 @@
+---
+title: Go SDK
+description: The Local Letter Go module — render a template and deliver it through Resend in a single call, served straight from the repository.
+---
+
+import { Callout } from 'nextra/components'
+
+# Go SDK
+
+Renders a template against your API, then hands the result to
+[Resend](https://resend.com) from your own process.
+
+```bash
+go get github.com/Sagar9980/local-letter/packages/go-sdk
+```
+
+Requires **Go 1.23+**. There's nothing published to a registry — the module is
+served straight from the repository. See [Versioning](#versioning).
+
+## Quick start
+
+The import path ends in `go-sdk`, but the package is named `localletter`, so
+import it under that name:
+
+```go filename="main.go"
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+
+    localletter "github.com/Sagar9980/local-letter/packages/go-sdk"
+)
+
+func main() {
+    letters, err := localletter.New(localletter.Options{
+        BaseURL:      "https://letters.yourcompany.com",
+        APIKey:       os.Getenv("LOCAL_LETTER_API_KEY"),
+        ResendAPIKey: os.Getenv("RESEND_API_KEY"),
+        From:         "hello@yourcompany.com",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    result, err := letters.Send(context.Background(), localletter.SendOptions{
+        Template:  "welcome-email",
+        To:        []string{"customer@example.com"},
+        Variables: map[string]any{"first_name": "Sagar"},
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println(result.ID) // Resend message id
+}
+```
+
+`New` fails when a credential is missing, so a typo shows up at startup rather
+than as a 401 on your first send. A `*Client` is safe for concurrent use —
+build one per process, not per request.
+
+## Localisation
+
+```go
+result, err := letters.Send(ctx, localletter.SendOptions{
+    Template:       "welcome-email",
+    To:             []string{user.Email},
+    Variables:      map[string]any{"first_name": user.FirstName},
+    Locale:         user.Locale, // "fr" — the French version, if it exists
+    FallbackLocale: "en",        // otherwise English, then the template default
+})
+
+result.Locale // what actually went out
+```
+
+Casing doesn't matter: `en-us` and `EN-US` both resolve to `en-US`. Full rules
+in [Locales & fallback](/concepts/locales).
+
+## `localletter.New(opts) (*Client, error)`
+
+| Field | Type | Notes |
+| ----- | ---- | ----- |
+| `BaseURL` | `string` | Your Local Letter API. A trailing slash is trimmed for you. Required. |
+| `APIKey` | `string` | Project API key, from the dashboard's API Keys page. Required. |
+| `ResendAPIKey` | `string` | Passed to Resend only. Local Letter never receives it. Required. |
+| `From` | `string` | Default sender for every `Send`. |
+| `HTTPClient` | `*http.Client` | Used for both the render call and Resend. Defaults to a client with a 30s timeout. |
+
+`HTTPClient` is the hook for connection pooling, proxies, or a tighter timeout
+than 30 seconds.
+
+## `letters.Send(ctx, opts) (*SendResult, error)`
+
+| Field | Type | Notes |
+| ----- | ---- | ----- |
+| `Template` | `string` | Template key, e.g. `"welcome-email"`. |
+| `To` | `[]string` | One or more recipients. |
+| `Variables` | `map[string]any` | Values for the template's `{{tokens}}`. |
+| `Locale` | `string` | Preferred locale. |
+| `FallbackLocale` | `string` | Used when `Locale` has no translation. |
+| `From` | `string` | Overrides the client default, this send only. |
+| `ReplyTo` | `string` | Reply-to address. |
+
+```go
+type SendResult struct {
+    ID      string // Resend message id
+    Subject string // rendered subject
+    HTML    string // rendered body
+    Locale  string // the locale that actually shipped
+}
+```
+
+The `ctx` is threaded through both the render call and Resend, so a cancelled
+request stops the whole chain.
+
+## Errors
+
+Two error types, matched with `errors.As`:
+
+```go
+result, err := letters.Send(ctx, opts)
+
+var renderErr *localletter.RenderError
+var sendErr *localletter.SendError
+
+switch {
+case errors.As(err, &renderErr):
+    // Your API rejected the render. renderErr.Status:
+    //   401 bad key · 403 key not linked to a project · 404 no such template
+case errors.As(err, &sendErr):
+    // Rendered fine, Resend refused it — often an unverified sender domain.
+    // errors.Unwrap(sendErr) holds Resend's own error.
+case err != nil:
+    // Nothing reached the API — wrong BaseURL, or it isn't running.
+}
+```
+
+<Callout type="info">
+  A missing variable is not an error. An unmatched `{{token}}` is left in the
+  rendered output rather than blanked — see
+  [Variables](/concepts/variables#missing-variables-stay-visible).
+</Callout>
+
+## Versioning
+
+Go modules are fetched from source control, so releasing is a git tag rather
+than a registry upload. This module lives in a subdirectory, so its tags carry
+that path as a prefix:
+
+```bash
+git tag packages/go-sdk/v0.1.0
+git push origin packages/go-sdk/v0.1.0
+```
+
+Consumers then pin that release:
+
+```bash
+go get github.com/Sagar9980/local-letter/packages/go-sdk@v0.1.0
+```
+
+Until a `v1.0.0` tag exists, `@latest` resolves to the newest `v0.x` tag, or to
+the default branch's latest commit if there are none.
+
+<Callout type="warning">
+  Tags are immutable once `proxy.golang.org` has cached them. To fix a bad
+  release, publish the next patch version — don't move the tag.
+</Callout>
+
+## Under the hood
+
+`Send` is two calls:
+
+1. `POST {BaseURL}/v1/render/{Template}` with `Authorization: Bearer {APIKey}`,
+   carrying `Variables`, `Locale` and `FallbackLocale`.
+2. Resend's `SendWithContext` with the rendered subject and HTML.
+
+Internally the Resend client is narrowed to a one-method interface, so it's
+straightforward to substitute in tests.
+
+## Example app
+
+A runnable `net/http` service using the SDK end to end lives in
+[`examples/go`](https://github.com/Sagar9980/local-letter/tree/main/examples/go).

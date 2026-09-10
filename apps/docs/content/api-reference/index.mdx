@@ -1,0 +1,152 @@
+---
+title: API overview
+description: Local Letter's HTTP conventions — the response envelope, the two authentication schemes, error codes and pagination.
+---
+
+import { Callout } from 'nextra/components'
+
+# API overview
+
+The Local Letter API is an Express service you host yourself. Everything below
+is relative to your own deployment — `http://localhost:4000` in development.
+
+## Two audiences, two auth schemes
+
+The API is split down the middle by who is calling.
+
+| | Dashboard routes | SDK routes |
+| --- | --- | --- |
+| **Paths** | `/projects`, `/library`, `/me` | `/v1/*` |
+| **Auth** | Session cookie, from signing in | `Authorization: Bearer <api key>` |
+| **Callers** | The dashboard, in a browser | Your backend, via an SDK |
+| **Can do** | Everything: create, edit, delete | Render templates, verify the key |
+
+An API key can *only* reach `/v1`. It cannot list, create or modify anything.
+That's why a leaked key can render your templates but can't change them — see
+[API keys](/concepts/api-keys).
+
+## Response envelope
+
+Every response, success or failure, is a JSON object with the same top-level
+shape.
+
+**Success:**
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Template rendered successfully",
+  "data": { }
+}
+```
+
+**Failure:**
+
+```json
+{
+  "success": false,
+  "statusCode": 404,
+  "message": "Template not found"
+}
+```
+
+Check `success` rather than sniffing for fields — a `4xx` still returns valid
+JSON in this shape, and the SDKs unwrap `data` for you. Errors may carry an
+extra `errors` field with detail.
+
+## Pagination
+
+List endpoints accept `?page=` and `?limit=`:
+
+| Parameter | Default | Max | Notes |
+| --------- | ------- | --- | ----- |
+| `page` | `1` | — | 1-based. |
+| `limit` | `50` | `100` | Values above 100 are clamped, not rejected. |
+
+Anything unparseable — `?page=abc`, `?limit=-5` — silently falls back to the
+default rather than erroring.
+
+Paginated responses attach `meta.pagination`:
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Templates fetched successfully",
+  "data": [],
+  "meta": {
+    "pagination": { "page": 1, "limit": 50, "total": 12, "totalPages": 1 }
+  }
+}
+```
+
+## Status codes
+
+| Code | Meaning |
+| ---- | ------- |
+| `200` | Fine. |
+| `201` | Created — new project, template, locale, API key, or library import. |
+| `400` | Bad input. A required field is missing, or a key/slug/locale doesn't match its pattern. |
+| `401` | No session, or a missing/invalid API key. |
+| `403` | Valid API key that isn't linked to a project. |
+| `404` | Not found — **or** found but not yours. |
+| `409` | Conflict: a slug, template key or locale is already taken. |
+| `500` | Unhandled server error. |
+
+<Callout type="info">
+  Resources you don't own return `404`, not `403`. Project lookups are scoped by
+  `(slug, ownerId)`, so someone else's project is indistinguishable from one
+  that doesn't exist.
+</Callout>
+
+## Unauthenticated routes
+
+`GET /health` is the only endpoint that needs no credentials:
+
+```bash
+curl http://localhost:4000/health
+```
+
+```json
+{ "success": true, "statusCode": 200, "message": "Service is healthy", "data": { "status": "ok" } }
+```
+
+Point your load balancer or container health check at it.
+
+## Endpoints at a glance
+
+**SDK — bearer key**
+
+```http
+GET  /v1/whoami
+POST /v1/render/:key
+```
+
+**Dashboard — session**
+
+```http
+GET    /me
+
+GET    /projects
+POST   /projects
+GET    /projects/:slug
+
+GET    /projects/:slug/templates
+POST   /projects/:slug/templates
+POST   /projects/:slug/templates/import
+GET    /projects/:slug/templates/:key
+PUT    /projects/:slug/templates/:key
+DELETE /projects/:slug/templates/:key
+POST   /projects/:slug/templates/:key/locales
+PUT    /projects/:slug/templates/:key/locales/:locale
+DELETE /projects/:slug/templates/:key/locales/:locale
+
+GET    /projects/:slug/api-keys
+POST   /projects/:slug/api-keys
+DELETE /projects/:slug/api-keys/:id
+
+GET    /library/packs
+GET    /library/packs/:packId
+GET    /library/packs/:packId/templates/:templateKey
+```

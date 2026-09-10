@@ -1,0 +1,105 @@
+---
+title: Variables
+description: How {{token}} placeholders in a Local Letter template are substituted at render time — and what happens when one is missing.
+---
+
+import { Callout } from 'nextra/components'
+
+# Variables
+
+Templates carry `{{token}}` placeholders in both the subject and the HTML body.
+At render time each one is replaced with a value from the `variables` object you
+pass to `send()`.
+
+```text filename="Template"
+Subject:  Your order {{order_id}} is on its way
+Body:     Hi {{first_name}}, it should reach you by {{delivery_date}}.
+```
+
+```ts filename="Your code"
+await letters.send({
+  template: 'order-shipped',
+  to: customer.email,
+  variables: {
+    first_name: 'Sagar',
+    order_id: 'A-1042',
+    delivery_date: 'Friday',
+  },
+})
+```
+
+## Token syntax
+
+A token is `{{`, an optional run of spaces, the name, optional spaces, `}}`.
+Names may contain letters, digits, underscores and dots.
+
+| Written in the template | Matches |
+| ----------------------- | ------- |
+| `{{first_name}}` | ✅ |
+| `{{ first_name }}` | ✅ — surrounding spaces are ignored |
+| `{{user.name}}` | ✅ as a **literal key** — see below |
+| `{{first name}}` | ❌ — spaces inside the name aren't allowed |
+
+<Callout type="warning">
+  Dots are part of the name, not a path. `{{user.name}}` looks up the key
+  `"user.name"` — it does **not** walk into a nested object. Pass
+  `{ "user.name": "Sagar" }`, or flatten to `{{user_name}}`, which is what the
+  built-in library packs do.
+</Callout>
+
+## Missing variables stay visible
+
+A token with no matching value is **left in the output exactly as written**,
+rather than replaced with an empty string:
+
+```ts
+await letters.send({
+  template: 'order-shipped',
+  to: customer.email,
+  variables: { first_name: 'Sagar' },   // order_id and delivery_date missing
+})
+```
+
+```text filename="What gets sent"
+Subject:  Your order {{order_id}} is on its way
+Body:     Hi Sagar, it should reach you by {{delivery_date}}.
+```
+
+This is deliberate. A blanked token produces a sentence that reads fine and is
+quietly wrong — "it should reach you by ." — while a visible `{{delivery_date}}`
+gets reported the first time it goes out. Nothing throws; the send succeeds.
+
+`null` and `undefined` count as missing and leave the token in place. Everything
+else is stringified: `0` renders `0`, `false` renders `false`, an array renders
+as its comma-joined contents.
+
+<Callout type="info">
+  Nothing validates that you supplied every token a template uses — the API
+  never sees a list of what the template needs. If you want that guarantee, keep
+  a typed object per template on your side and build `variables` from it.
+</Callout>
+
+## Values are inserted as-is
+
+Substitution is a literal string replacement into the HTML body. Values are
+**not** HTML-escaped, so a value containing `<` or `&` lands in the markup
+verbatim.
+
+Treat variables as trusted content: pass names, order ids and dates you control.
+Don't pass raw user-authored text — a display name someone typed, the body of a
+support ticket — straight into a template without escaping it yourself first.
+
+## Recording expected variables
+
+Templates imported from the [library](/concepts/template-library) arrive with a
+`variablesSchema` on the locale row, listing the tokens that pack's design uses.
+It's informational — the dashboard reads it to show you what to fill in, and
+the render path ignores it entirely.
+
+Templates you build yourself don't get one; the editor is the record of what the
+template expects.
+
+## Related
+
+- [Templates](/concepts/templates) — where subject and body live
+- [Locales & fallback](/concepts/locales) — tokens are shared across translations

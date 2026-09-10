@@ -1,0 +1,75 @@
+---
+title: Projects
+description: A project is the unit of ownership in Local Letter — it owns templates and API keys, and scopes every render call.
+---
+
+import { Callout } from 'nextra/components'
+
+# Projects
+
+A project is the boundary everything else lives inside. It owns templates and
+API keys, and an API key can only ever render templates belonging to its own
+project.
+
+Use one project per application or environment — `acme-app`, `acme-staging` —
+so a staging key can never render (or be swapped for) a production template.
+
+## Shape
+
+| Field | Notes |
+| ----- | ----- |
+| `name` | Free text, shown in the dashboard. Required. |
+| `slug` | URL identifier. Derived from `name` if you don't supply one. |
+| `ownerId` | The user who created it. Projects are single-owner today. |
+
+## Slugs
+
+A slug must match `^[a-z0-9-]+$`. When you don't pass one, it's generated from
+the name by lowercasing and replacing every run of non-alphanumeric characters
+with a single `-`:
+
+| Name | Generated slug |
+| ---- | -------------- |
+| `Acme` | `acme` |
+| `Acme Corp` | `acme-corp` |
+| `Acme — Staging!` | `acme-staging` |
+
+Slugs are globally unique. Creating a project with a slug that's taken returns
+`409 slug already in use`.
+
+<Callout type="warning">
+  There is no rename-slug endpoint. The slug is in every dashboard URL and in
+  the API paths for that project's templates and keys, so pick it deliberately.
+</Callout>
+
+## Ownership
+
+Every project-scoped endpoint resolves the project by `(slug, ownerId)` — a
+project belonging to someone else is a `404 Project not found`, not a `403`.
+Existence isn't leaked to users who don't own it.
+
+There is no team or member model yet: one owner per project, and projects are
+not shared between accounts.
+
+## In the API
+
+```http
+GET    /projects            # your projects, paginated
+POST   /projects            # { name, slug? }
+GET    /projects/:slug
+```
+
+Templates and API keys hang off the project:
+
+```http
+GET  /projects/:slug/templates
+GET  /projects/:slug/api-keys
+```
+
+All of these use your dashboard session. See
+[API reference → Projects](/api-reference/projects).
+
+## Related
+
+- [API keys](/concepts/api-keys) — how a key gets bound to a project
+- [Templates](/concepts/templates) — what a project holds

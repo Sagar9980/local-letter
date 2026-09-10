@@ -1,0 +1,165 @@
+---
+title: Render
+description: The /v1/render endpoint — the one call the SDKs make, and the only write-free way to turn a template into HTML.
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Render
+
+The endpoint every SDK is built on. Give it a template key, some variables and a
+locale; get back a subject and HTML. It sends nothing — delivery is yours.
+
+Authenticated with a project API key, not a session.
+
+## `POST /v1/render/:key`
+
+```http
+POST /v1/render/welcome-email
+Authorization: Bearer <your api key>
+Content-Type: application/json
+```
+
+```json
+{
+  "variables": { "first_name": "Sagar", "company": "Acme" },
+  "locale": "fr",
+  "fallbackLocale": "en"
+}
+```
+
+### Path
+
+| Parameter | Notes |
+| --------- | ----- |
+| `key` | The template key, e.g. `welcome-email`. Resolved within the project the API key belongs to. |
+
+### Body
+
+| Field | Type | Required | Notes |
+| ----- | ---- | -------- | ----- |
+| `variables` | `object` | No | Values for the template's `{{tokens}}`. Anything that isn't an object is treated as `{}`. |
+| `locale` | `string` | No | Preferred locale. Invalid codes are ignored, not rejected. |
+| `fallbackLocale` | `string` | No | Used when `locale` has no translation. |
+
+### Response
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Template rendered successfully",
+  "data": {
+    "subject": "Bienvenue, Sagar",
+    "html": "<html>…</html>",
+    "locale": "fr"
+  }
+}
+```
+
+`data.locale` is the locale that was actually used, which may be your fallback
+or the template's default. Log it if you want to know when translations are
+missing.
+
+## Example
+
+<Tabs items={['curl', 'fetch']}>
+<Tabs.Tab>
+
+```bash
+curl -X POST http://localhost:4000/v1/render/welcome-email \
+  -H "Authorization: Bearer $LOCAL_LETTER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "variables": { "first_name": "Sagar" },
+        "locale": "fr",
+        "fallbackLocale": "en"
+      }'
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+```ts
+const res = await fetch(`${baseUrl}/v1/render/welcome-email`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${apiKey}`,
+  },
+  body: JSON.stringify({
+    variables: { first_name: 'Sagar' },
+    locale: 'fr',
+    fallbackLocale: 'en',
+  }),
+})
+
+const body = await res.json()
+if (!res.ok || !body.success) throw new Error(body.message)
+
+const { subject, html, locale } = body.data
+```
+
+</Tabs.Tab>
+</Tabs>
+
+## How the locale is chosen
+
+Three candidates, first match wins: `locale`, then `fallbackLocale`, then the
+template's `defaultLocale`. Codes are normalised first, so `EN-us` matches
+`en-US`.
+
+<Callout type="warning">
+  An invalid locale code is **ignored, not rejected**. `"locale": "english"`
+  doesn't produce a `400` — it's simply skipped, and you get the fallback or the
+  default. Nothing tells you a typo happened except `data.locale` coming back as
+  something you didn't ask for.
+</Callout>
+
+Full rules: [Locales & fallback](/concepts/locales).
+
+## How variables are substituted
+
+Each `{{token}}` in the subject and body is replaced with the matching key from
+`variables`. A token with no value is **left in the output as written** rather
+than blanked, and the render still succeeds. Values are inserted verbatim —
+they are not HTML-escaped.
+
+Full rules: [Variables](/concepts/variables).
+
+## Errors
+
+| Status | Message | Cause |
+| ------ | ------- | ----- |
+| `401` | `Missing API key` | No `Authorization: Bearer …` header. |
+| `401` | `Invalid API key` | Key revoked, mistyped, or from another deployment. |
+| `403` | `API key is not linked to a project` | The key exists but has no project binding. Mint a new one from a project's API Keys page. |
+| `404` | `Template not found` | No template with that key in the key's project. |
+| `404` | `No locale available for this template` | The template has no locale rows at all. |
+
+## Verifying a key
+
+```http
+GET /v1/whoami
+Authorization: Bearer <your api key>
+```
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "API key verified successfully",
+  "data": { "referenceId": "…" }
+}
+```
+
+A liveness check for a key that renders nothing. `referenceId` is the user the
+key was issued for.
+
+## Notes
+
+- **Rendering is a read.** It writes no rows and has no side effects, so it's
+  safe to retry.
+- **Status is not enforced.** A `draft` locale renders exactly like a published
+  one.
+- **There's no batch form.** One template per call; loop or fan out yourself.

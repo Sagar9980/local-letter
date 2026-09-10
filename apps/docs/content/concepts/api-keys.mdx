@@ -1,0 +1,93 @@
+---
+title: API keys
+description: How Local Letter API keys are issued, scoped to a project, presented once, and revoked.
+---
+
+import { Callout } from 'nextra/components'
+
+# API keys
+
+An API key is what lets your backend render templates without a user session.
+Keys are created per project from the dashboard's **API Keys** page and sent as
+a bearer token:
+
+```http
+Authorization: Bearer <your api key>
+```
+
+## Scope
+
+A key belongs to exactly one project, and can only render templates in that
+project. There is no cross-project or account-wide key.
+
+That means: one key per application *and* environment. A staging key pointed at
+a production template returns `404 Template not found`, which is the behaviour
+you want.
+
+A key is bound to its project the moment it's created. If you ever see
+`403 API key is not linked to a project`, the key predates that binding or was
+created outside the dashboard flow — mint a new one from a project page.
+
+## Shown once
+
+The raw key value is returned **only** in the response that creates it:
+
+```json
+{
+  "id": "…",
+  "name": "Production backend",
+  "prefix": "…",
+  "start": "…",
+  "enabled": true,
+  "key": "the-actual-secret-value"
+}
+```
+
+Every later read — the list endpoint, the dashboard table — returns `id`,
+`name`, `prefix`, `start`, `enabled`, `lastRequest` and `createdAt`, but never
+`key`. `start` is the leading characters, kept so you can tell two keys apart in
+a list.
+
+<Callout type="warning">
+  Copy the key when you create it. There is no way to recover it afterwards —
+  a lost key is replaced, not retrieved.
+</Callout>
+
+## Revoking
+
+`DELETE /projects/:slug/api-keys/:id` deletes the key outright. The next request
+using it gets `401 Invalid API key`. This is immediate and irreversible; to
+rotate, create the replacement, deploy it, then revoke the old one.
+
+## What a key can't do
+
+Keys only reach the `/v1` routes — `whoami` and `render`. They cannot list,
+create, edit or delete templates, projects or other keys; every one of those
+endpoints requires a logged-in dashboard session.
+
+So a leaked key can render your templates and read their HTML. It cannot change
+your templates, and it can't send email — delivery goes through *your* Resend
+key, which Local Letter never holds.
+
+## Checking a key
+
+```bash
+curl http://localhost:4000/v1/whoami \
+  -H "Authorization: Bearer $LOCAL_LETTER_API_KEY"
+```
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "API key verified successfully",
+  "data": { "referenceId": "…" }
+}
+```
+
+A quick liveness check for a key without rendering anything.
+
+## Related
+
+- [Projects](/concepts/projects) — what a key is scoped to
+- [API reference → API keys](/api-reference/api-keys)

@@ -1,0 +1,148 @@
+---
+title: Python SDK
+description: The local-letter PyPI package — render a Local Letter template and deliver it through Resend in a single call.
+---
+
+import { Callout } from 'nextra/components'
+
+# Python SDK
+
+`local-letter` on PyPI. Renders a template against your API, then hands the
+result to [Resend](https://resend.com) from your own process.
+
+```bash
+pip install local-letter
+```
+
+Requires **Python 3.9+**. Depends on `requests` and `resend`.
+
+## Quick start
+
+```python
+import os
+from local_letter import TemplateClient
+
+letters = TemplateClient(
+    base_url="https://letters.yourcompany.com",
+    api_key=os.environ["LOCAL_LETTER_API_KEY"],
+    resend_api_key=os.environ["RESEND_API_KEY"],
+    from_="hello@yourcompany.com",
+)
+
+result = letters.send(
+    template="welcome-email",
+    to="customer@example.com",
+    variables={"first_name": "Sagar"},
+)
+
+print(result.id)  # Resend message id
+```
+
+`from_` has a trailing underscore because `from` is a Python keyword.
+
+## Localisation
+
+```python
+result = letters.send(
+    template="welcome-email",
+    to=user.email,
+    variables={"first_name": user.first_name},
+    locale=user.locale,       # "fr" — the French version, if it exists
+    fallback_locale="en",     # otherwise English, then the template default
+)
+
+result.locale  # what actually went out
+```
+
+Casing doesn't matter: `en-us` and `EN-US` both resolve to `en-US`. Full rules
+in [Locales & fallback](/concepts/locales).
+
+## `TemplateClient(...)`
+
+```python
+TemplateClient(base_url, api_key, resend_api_key, from_)
+```
+
+| Argument | Type | Notes |
+| -------- | ---- | ----- |
+| `base_url` | `str` | Your Local Letter API. A trailing slash is stripped for you. |
+| `api_key` | `str` | Project API key, from the dashboard's API Keys page. |
+| `resend_api_key` | `str` | Passed to Resend only. Local Letter never receives it. |
+| `from_` | `str` | Default sender for every `send()`. |
+
+<Callout type="warning">
+  The `resend` library keeps its API key in a module-level global, so
+  constructing a `TemplateClient` sets it process-wide. If you build two clients
+  with different Resend keys, the last one constructed wins for both. One client
+  per process is the intended shape.
+</Callout>
+
+## `letters.send(...)`
+
+| Argument | Type | Notes |
+| -------- | ---- | ----- |
+| `template` | `str` | Template key, e.g. `"welcome-email"`. |
+| `to` | `str \| list[str]` | One or more recipients. |
+| `variables` | `dict` | Values for the template's `{{tokens}}`. |
+| `locale` | `str` | Preferred locale. |
+| `fallback_locale` | `str` | Used when `locale` has no translation. |
+| `from_` | `str` | Overrides the client default, this send only. |
+| `reply_to` | `str` | Reply-to address. |
+
+Returns a `SendResult` dataclass:
+
+```python
+@dataclass
+class SendResult:
+    id: str        # Resend message id
+    subject: str   # rendered subject
+    html: str      # rendered body
+    locale: str | None  # the locale that actually shipped
+```
+
+## Errors
+
+Two exception types, so you can tell a template problem from a delivery
+problem:
+
+```python
+from local_letter import TemplateRenderError, TemplateSendError
+
+try:
+    letters.send(template="welcome-email", to=user.email)
+except TemplateRenderError as err:
+    # Your API rejected the render. err.status:
+    #   401 bad key · 403 key not linked to a project · 404 no such template
+    ...
+except TemplateSendError as err:
+    # Rendered fine, Resend refused it — often an unverified sender domain.
+    # err.cause holds Resend's own exception.
+    ...
+```
+
+A network failure reaching your API surfaces as `requests`' own
+`ConnectionError`, not as either of these — that means a wrong `base_url`, or an
+API that isn't running.
+
+<Callout type="info">
+  A missing variable is not an error. An unmatched `{{token}}` is left in the
+  rendered output rather than blanked — see
+  [Variables](/concepts/variables#missing-variables-stay-visible).
+</Callout>
+
+## Under the hood
+
+`send()` is two calls:
+
+1. `POST {base_url}/v1/render/{template}` with `Authorization: Bearer {api_key}`,
+   carrying `variables`, `locale` and `fallbackLocale`.
+2. `resend.Emails.send(...)` with the rendered subject and HTML.
+
+Requests are synchronous and blocking — in an async framework, run `send()` in a
+threadpool (`asyncio.to_thread`, FastAPI's `run_in_threadpool`) or queue it to a
+worker rather than awaiting it on the request path.
+
+## Example app
+
+A runnable Flask service using the SDK end to end lives in
+[`examples/python`](https://github.com/Sagar9980/local-letter/tree/main/examples/python).

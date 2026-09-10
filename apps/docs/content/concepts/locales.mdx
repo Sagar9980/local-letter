@@ -1,0 +1,121 @@
+---
+title: Locales & fallback
+description: How Local Letter normalises locale codes and resolves which translation actually ships.
+---
+
+import { Callout } from 'nextra/components'
+
+# Locales & fallback
+
+A template holds one row per language. At render time Local Letter picks
+exactly one of them, and it never fails just because the requested language is
+missing.
+
+## The fallback chain
+
+Three candidates, in order. The first that exists on the template wins:
+
+1. **`locale`** — what you asked for
+2. **`fallbackLocale`** — what you'd accept instead
+3. **`template.defaultLocale`** — the template's own default, always present
+
+```ts
+await letters.send({
+  template: 'welcome-email',
+  to: user.email,
+  locale: user.locale,     // "fr" — French if the template has it
+  fallbackLocale: 'en',    // otherwise English
+})                         // otherwise the template's default
+```
+
+The response tells you which one actually shipped:
+
+```ts
+const result = await letters.send({ /* … */ })
+result.locale // "fr" | "en" | whatever the default was
+```
+
+Log that field if you care about coverage — a steady stream of fallbacks is how
+you find out a translation was never added.
+
+<Callout type="info">
+  Both `locale` and `fallbackLocale` are optional. Omit them and you always get
+  the template's default locale, which is what a single-language project wants.
+</Callout>
+
+Only if the template has no locale rows at all does rendering fail, with
+`404 No locale available for this template`. In practice that can't happen
+through the dashboard, since the default locale is created with the template and
+can't be deleted.
+
+## Locale codes
+
+Codes are a small BCP-47 subset: a 2–3 letter language, optionally followed by
+one subtag.
+
+```
+^[a-z]{2,3}(-[a-z0-9]{2,8})?$
+```
+
+| Valid | Meaning |
+| ----- | ------- |
+| `en` | Language only |
+| `en-US` | Language + region |
+| `zh-Hant` | Language + script |
+| `pt-BR` | Language + region |
+
+Anything that doesn't match the pattern is rejected with
+`400 locale must be a code like 'en' or 'en-US'` when you're creating a locale.
+
+<Callout type="warning">
+  On the **render** path an unparseable `locale` or `fallbackLocale` isn't an
+  error — it's simply ignored, and resolution moves to the next candidate. A
+  typo like `"english"` silently renders the default rather than throwing.
+</Callout>
+
+## Normalisation
+
+Casing is normalised before anything is matched or stored, so the same locale
+can't end up as two rows:
+
+| You send | Stored / matched as |
+| -------- | ------------------- |
+| `EN-us` | `en-US` |
+| `en-us` | `en-US` |
+| `ZH-hant` | `zh-Hant` |
+| `EN` | `en` |
+
+The rule: language lowercased; a 2-character subtag uppercased (region), a
+4-character subtag title-cased (script), anything else lowercased.
+
+Because matching is exact after normalisation, `en-US` and `en` are **different
+locales**. A recipient asking for `en-GB` does not match an `en` row — it falls
+through to your fallback. If you want one English for everyone, store it as
+`en` and send `en`.
+
+## Adding a translation
+
+`POST /projects/:slug/templates/:key/locales` takes the new locale and an
+optional `copyFrom`:
+
+```json
+{ "locale": "fr", "copyFrom": "en" }
+```
+
+With `copyFrom`, the new locale starts as a copy of that sibling's subject,
+body, design and variable schema — translators edit copy inside a layout that
+already works, instead of rebuilding it. Without it, the locale starts empty.
+
+Adding a locale that already exists returns `409 locale already exists for this
+template`. Copying from one that doesn't returns `400`.
+
+## Deleting
+
+`DELETE /projects/:slug/templates/:key/locales/:locale` removes a translation.
+Deleting the default locale is refused with `400 Cannot delete the default
+locale` — it's the last link in every fallback chain.
+
+## Related
+
+- [Templates](/concepts/templates) — how locales hang off a template
+- [Render endpoint](/api-reference/render) — the raw request

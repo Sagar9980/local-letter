@@ -1,0 +1,68 @@
+---
+title: Introduction
+description: Local Letter is self-hosted transactional email — design a template once, translate it per locale, and render it from any codebase with one typed SDK call.
+---
+
+import { Cards } from 'nextra/components'
+
+# Local Letter
+
+Transactional email that speaks every language. Design a template once in a
+visual editor, translate it per locale, and render it from any codebase with
+one typed SDK call. Open source and self-hosted — your templates, your
+database, your infrastructure.
+
+```ts
+await letters.send({
+  template: 'welcome-email',
+  to: 'customer@example.com',
+  variables: { first_name: 'Sagar' },
+  locale: 'fr',
+})
+```
+
+## What it is
+
+Local Letter splits an email into the two things that change at different
+speeds:
+
+- **The template** — subject line and HTML body, edited visually in the
+  dashboard, versioned per locale. Marketing and support can change copy
+  without a deploy.
+- **The call site** — a single `send()` in your backend that names a template
+  key, hands over some variables, and says which locale the recipient reads.
+
+Rendering happens in your API. Delivery happens through
+[Resend](https://resend.com), called directly from your server, so your Resend
+key never reaches Local Letter.
+
+## The pieces
+
+| Piece | What it does |
+| ----- | ------------ |
+| **API** (`apps/api`) | Express + Prisma + Postgres. Auth, projects, templates, locales, API keys, and the render endpoint the SDKs call. |
+| **Dashboard** (`apps/web`) | React + Vite. The visual template editor, translations, projects, and API-key management. |
+| **SDKs** | [Node](/sdks/node), [Python](/sdks/python) and [Go](/sdks/go) — the same `send()` in each. |
+| **Marketing site** (`apps/site`) | The public site at the project's front door. |
+| **Docs** (`apps/docs`) | This site. |
+
+## Where to start
+
+<Cards>
+  <Cards.Card title="Install and run it locally" href="/getting-started/installation" arrow />
+  <Cards.Card title="Send your first email" href="/getting-started/first-email" arrow />
+  <Cards.Card title="How templates and locales fit together" href="/concepts/templates" arrow />
+  <Cards.Card title="The render endpoint" href="/api-reference/render" arrow />
+</Cards>
+
+## Design decisions worth knowing up front
+
+- **Your Resend key stays yours.** The SDK renders against your API, then calls
+  Resend itself. Local Letter never sees the key and never sends mail.
+- **A missing variable is loud.** An unmatched `{{token}}` is left in the output
+  rather than blanked, so a mistake is visible in the email instead of silently
+  producing a gap. See [Variables](/concepts/variables).
+- **Locales fall back, they don't fail.** Requested locale, then your fallback,
+  then the template's default. See [Locales](/concepts/locales).
+- **Templates are per project.** A template key is unique within a project, and
+  an API key is scoped to exactly one project. See [Projects](/concepts/projects).
