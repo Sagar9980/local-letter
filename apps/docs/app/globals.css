@@ -1,6 +1,54 @@
 /*
- * Nextra's `<Footer>` renders a full-width grey band under the content, which
- * is a lot of chrome for one line of copyright. `layout.tsx` drops the `footer`
+ * Theme overrides on top of `nextra-theme-docs/style.css`.
+ *
+ * The primary hue, the page background and the font stacks are all set through
+ * Nextra's own hooks (`<Head color backgroundColor>` in app/layout.tsx, and the
+ * `--x-font-*` tokens below), so this file stays small — the theme keeps
+ * owning the layout, we only feed it Local Letter's palette.
+ */
+
+:root {
+  /* Local Letter's brand tokens, matching apps/site/app/globals.css. */
+  --ll-ink-950: oklch(0.129 0.006 60);
+  --ll-seal: oklch(0.672 0.187 29);
+
+  /* The mark's envelope gradient. The site is dark-only and can use the light
+     ambers straight; on a white page they disappear, so the light theme gets a
+     deeper pair and the dark theme restores the originals below. */
+  --ll-mark-from: oklch(0.762 0.132 74);
+  --ll-mark-to: oklch(0.628 0.152 55);
+
+  /* next/font faces from app/layout.tsx, handed to the theme's own tokens. */
+  --x-font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --x-font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.dark {
+  --ll-mark-from: oklch(0.902 0.06 74);
+  --ll-mark-to: oklch(0.752 0.152 68);
+}
+
+::selection {
+  background-color: color-mix(in oklab, var(--ll-mark-to) 28%, transparent);
+}
+
+/* Navbar wordmark: the mark, the name, and a muted "Docs" qualifier. */
+.ll-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.ll-wordmark-suffix {
+  margin-inline-start: 0.375rem;
+  opacity: 0.55;
+  font-weight: 400;
+}
+
+/*
+ * Nextra's <Footer> renders a full-width grey band under the content, which is
+ * a lot of chrome for one line of copyright. `layout.tsx` drops the `footer`
  * prop entirely and the notice is attached to the sidebar's own footer row
  * instead — the strip that already holds the theme switch and collapse button.
  *
