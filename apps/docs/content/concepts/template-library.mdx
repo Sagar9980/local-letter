@@ -1,0 +1,124 @@
+---
+title: Template library
+description: Fourteen built-in packs of themed, ready-made transactional emails you can import into a project and edit.
+---
+
+import { Callout } from 'nextra/components'
+
+# Template library
+
+Local Letter ships with a library of themed template packs. Importing one copies
+its emails into your project as ordinary templates — fully editable, with no
+link back to the library afterwards.
+
+It exists so a new project isn't a blank editor. Import the pack closest to what
+you're building, then rewrite the copy.
+
+## The packs
+
+Every template in a pack renders through the same theme — colours, radii,
+typography — so an imported set looks like one product's email, not fourteen.
+
+| Pack id | Name | For | Templates |
+| ------- | ---- | --- | --------- |
+| `saas-starter` | SaaS Starter Pack | SaaS & B2B software | 16 |
+| `ecommerce` | E-commerce Pack | Online stores & retail | 10 |
+| `newsletter` | Newsletter Pack | Publishers & content teams | 8 |
+| `agency` | Agency Pack | Agencies & freelancers | 8 |
+| `education` | Education Pack | EdTech, schools & course creators | 10 |
+| `fintech` | Fintech Pack | Fintech, banking & payments | 10 |
+| `healthcare` | Healthcare Pack | Clinics, telehealth & health apps | 8 |
+| `events` | Events Pack | Events, conferences & ticketing | 8 |
+| `marketplace` | Marketplace Pack | Marketplaces & gig platforms | 8 |
+| `community` | Community Pack | Communities & social products | 8 |
+| `devtools` | Developer Platform Pack | Developer tools & APIs | 8 |
+| `travel` | Travel Pack | Travel, hotels & rentals | 8 |
+| `recruiting` | Recruiting & HR Pack | HR, recruiting & people teams | 8 |
+| `nonprofit` | Nonprofit Pack | Nonprofits & causes | 8 |
+
+Packs are static data compiled into the API. There's no library table, nothing
+to seed, and nothing to migrate when a pack changes.
+
+## How templates are authored
+
+A library template isn't raw HTML — it's a list of structured blocks (heading,
+text, button, panel, table, callout, steps, metrics, quote, image, divider…)
+that the renderer turns into the table-based, inline-styled markup email clients
+actually need, applying the pack's theme as it goes.
+
+You only see the result: importing gives you rendered HTML in a normal template
+locale, which the visual editor then owns.
+
+## Importing
+
+From the dashboard, pick a pack and import it into a project. Under the hood:
+
+```http
+POST /projects/:slug/templates/import
+```
+
+```json
+{
+  "packId": "saas-starter",
+  "templateKeys": ["welcome", "password-reset"],
+  "prefix": "acme"
+}
+```
+
+| Field | Required | What it does |
+| ----- | -------- | ------------ |
+| `packId` | Yes | Which pack to import from. |
+| `templateKeys` | No | Import only these. Omit to import the whole pack. |
+| `prefix` | No | Namespaces every key as `<prefix>-<key>`. |
+
+Each imported template arrives as a draft with a single `en` locale, holding the
+pack's rendered subject and HTML, plus a `variablesSchema` listing the tokens
+that design uses.
+
+<Callout type="info">
+  **An import never overwrites.** A template whose key is already taken is
+  skipped, and comes back in the response's `skipped` array with the reason. If
+  you want both copies, import again with a `prefix`.
+</Callout>
+
+The response tells you exactly what happened:
+
+```json
+{
+  "packId": "saas-starter",
+  "packName": "SaaS Starter Pack",
+  "imported": [{ "id": "…", "key": "welcome", "name": "Welcome" }],
+  "skipped": [{ "key": "password-reset", "name": "Password Reset", "reason": "key already in use" }]
+}
+```
+
+## After importing
+
+An imported template is a normal template. Edit it, add locales, delete it —
+nothing points back at the pack, and a later change to the built-in pack won't
+touch what you imported.
+
+The one thing to do first: replace the placeholder tokens. Pack designs use
+tokens like `{{company_name}}`, `{{company_address}}` and `{{portfolio_url}}` in
+their headers and footers, and those need either real values in every `send()`
+call or hardcoding in the editor. Otherwise they [render as
+literals](/concepts/variables#missing-variables-stay-visible).
+
+## Browsing without importing
+
+The library is readable over the API with a dashboard session:
+
+```http
+GET /library/packs                                    # all packs, without HTML
+GET /library/packs/:packId                            # one pack, with rendered HTML
+GET /library/packs/:packId/templates/:templateKey      # a single template
+```
+
+The list endpoint drops the rendered markup — roughly 10kb per template — since
+the pack browser only needs names and colour swatches. See
+[API reference → Library](/api-reference/library).
+
+## Related
+
+- [Templates](/concepts/templates) — what an imported template becomes
+- [Variables](/concepts/variables) — the tokens pack designs rely on

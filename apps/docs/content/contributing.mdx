@@ -1,0 +1,115 @@
+---
+title: Contributing
+description: How to work on Local Letter — repo layout, the checks to run before a PR, and how to report bugs or vulnerabilities.
+---
+
+import { Callout } from 'nextra/components'
+
+# Contributing
+
+Local Letter is young, so **open an issue before starting on anything
+non-trivial**. It saves everyone a rewritten PR.
+
+## Repo layout
+
+| Path | What it is |
+| ---- | ---------- |
+| [`apps/api`](https://github.com/Sagar9980/local-letter/tree/main/apps/api) | Express + Prisma + Postgres. Auth, projects, templates, rendering, API keys. |
+| [`apps/web`](https://github.com/Sagar9980/local-letter/tree/main/apps/web) | The dashboard — React + Vite, with the GrapesJS template editor. |
+| [`apps/site`](https://github.com/Sagar9980/local-letter/tree/main/apps/site) | The public marketing site — Next.js + Tailwind v4. |
+| [`apps/docs`](https://github.com/Sagar9980/local-letter/tree/main/apps/docs) | This documentation site — Next.js + Nextra. |
+| [`packages/node-sdk`](https://github.com/Sagar9980/local-letter/tree/main/packages/node-sdk) | `local-letter` on npm. |
+| [`packages/python-sdk`](https://github.com/Sagar9980/local-letter/tree/main/packages/python-sdk) | `local-letter` on PyPI. |
+| [`packages/go-sdk`](https://github.com/Sagar9980/local-letter/tree/main/packages/go-sdk) | The Go module, served from the repo. |
+| [`examples/`](https://github.com/Sagar9980/local-letter/tree/main/examples) | A runnable app per SDK language. |
+
+## Getting set up
+
+Follow [Installation](/getting-started/installation). For most product work you
+only need `apps/api` and `apps/web` running:
+
+```bash
+pnpm --filter @local-letter/api dev
+pnpm --filter @local-letter/web dev
+```
+
+The marketing site, these docs and the SDK packages are independent and can be
+run on their own the same way.
+
+## Before opening a PR
+
+From the repo root:
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm build
+```
+
+These fan out across every app via Turborepo. Fix anything that fails for a
+package your change touches before requesting review.
+
+<Callout type="info">
+  There's no repo-wide automated test suite yet — the Python SDK has unit tests,
+  and the Go SDK has its own. If you're adding tests elsewhere, say so in the PR
+  description so reviewers know what to expect.
+</Callout>
+
+## Making changes
+
+- **Keep changes scoped to the apps they touch.** Each app and package is
+  independently versioned and deployed.
+- **If you change the API surface** that an SDK or the dashboard depends on,
+  update the caller in the same PR.
+- **Match the existing style** in the file you're editing rather than
+  introducing a new one.
+- **Write commit messages that explain *why***, not just what.
+
+## Working on the docs
+
+This site is Nextra with the content-directory convention:
+
+```bash
+pnpm --filter @local-letter/docs dev   # http://localhost:5175
+```
+
+Pages are MDX under `apps/docs/content/`, and the path on disk is the URL —
+`content/concepts/locales.mdx` serves `/concepts/locales`. Sidebar order and
+titles come from the `_meta.ts` file in each directory; a page missing from
+`_meta.ts` still renders but sorts alphabetically after the listed ones.
+
+<Callout type="warning">
+  MDX treats `{` as the start of an expression, so a bare `{{token}}` in prose
+  will break the build. Wrap tokens in backticks or a fenced code block — every
+  page here already does.
+</Callout>
+
+Every page has an "Edit this page on GitHub" link at the bottom, which is the
+fastest path for a typo fix.
+
+## Pull requests
+
+- One logical change per PR.
+- Describe what changed and why; link the issue it addresses.
+- A maintainer will review and may ask for changes before merging.
+
+## Reporting bugs and features
+
+Open a [GitHub issue](https://github.com/Sagar9980/local-letter/issues) with
+steps to reproduce, or the use case for a feature request.
+
+## Security
+
+**Don't** open a public issue for a vulnerability. Email
+**sagardhami2001@gmail.com** with a description, impact, repro steps, and the
+affected app or package. You'll get an acknowledgement within a few days, and
+disclosure timing (and credit, if you want it) is coordinated with you.
+
+Reports about `apps/api` — auth, API key handling, template rendering, isolation
+between projects — and about the SDKs' handling of credentials are the most
+valuable, since those are the parts that touch secrets and user data. Full
+policy: [SECURITY.md](https://github.com/Sagar9980/local-letter/blob/main/SECURITY.md).
+
+## License
+
+MIT.

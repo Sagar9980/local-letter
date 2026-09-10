@@ -1,0 +1,176 @@
+---
+title: Self-hosting
+description: Deploying the Local Letter API and dashboard to your own infrastructure — builds, migrations, CORS, secrets and backups.
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# Self-hosting
+
+Local Letter has no hosted tier. Running it means running two things — an
+Express API against Postgres, and a static dashboard bundle — on whatever
+infrastructure you already have.
+
+## What actually needs deploying
+
+| Component | What it is | Needs |
+| --------- | ---------- | ----- |
+| `apps/api` | Express server | Node 20+, a Postgres database, a persistent process |
+| `apps/web` | Vite SPA | Any static host or CDN |
+| `apps/site` | Marketing site | Optional — skip it for an internal deployment |
+| `apps/docs` | These docs | Optional |
+
+The API is the only stateful piece. The dashboard is static files that talk to
+it from the browser.
+
+<Callout type="info">
+  There's no Dockerfile or Compose file in the repo yet. Deploy it the way you'd
+  deploy any Node service: build, ship `dist/`, run `node dist/index.js` under a
+  process manager.
+</Callout>
+
+## Deploying the API
+
+<Steps>
+
+### Build
+
+```bash
+pnpm install --frozen-lockfile
+pnpm --filter @local-letter/api build
+```
+
+TypeScript compiles to `apps/api/dist`.
+
+### Set the environment
+
+```bash
+DATABASE_URL="postgresql://…"
+BETTER_AUTH_SECRET="<long random string>"
+BETTER_AUTH_URL="https://letters.yourcompany.com"
+WEB_ORIGIN="https://letters-dashboard.yourcompany.com"
+PORT=4000
+```
+
+`BETTER_AUTH_URL` is the API's own public URL. `WEB_ORIGIN` is where the
+dashboard is served from — see [CORS and cookies](#cors-and-cookies) below.
+Every variable is described in
+[Configuration](/getting-started/configuration).
+
+### Migrate
+
+Run migrations as a deploy step, before the new process takes traffic:
+
+```bash
+pnpm --filter @local-letter/api exec prisma migrate deploy
+```
+
+`migrate deploy` applies committed migrations without prompting and never
+generates new ones — it's the production counterpart to `migrate dev`.
+
+### Run
+
+```bash
+node apps/api/dist/index.js
+```
+
+Under systemd, PM2, a container, or whatever restarts crashed processes on your
+platform.
+
+### Health check
+
+Point your load balancer at `GET /health`, which needs no credentials and
+touches nothing:
+
+```bash
+curl https://letters.yourcompany.com/health
+```
+
+</Steps>
+
+## Deploying the dashboard
+
+`VITE_API_URL` is inlined at build time, so it must be set **before** you build:
+
+```bash
+VITE_API_URL="https://letters.yourcompany.com" pnpm --filter @local-letter/web build
+```
+
+Upload `apps/web/dist` to any static host. Configure it to serve `index.html`
+for unknown paths — it's a client-side-routed SPA, and without that rule a
+refresh on `/projects/acme` returns 404.
+
+Changing the API URL means rebuilding. There's no runtime configuration.
+
+## CORS and cookies
+
+The API allows exactly one origin — whatever `WEB_ORIGIN` is set to — and sends
+credentials with it. Sessions are cookies, so the dashboard and API must line up:
+
+- `WEB_ORIGIN` must be the dashboard's exact origin: scheme, host, port. No
+  trailing slash, no wildcard.
+- `VITE_API_URL` must be the API's origin, matching `BETTER_AUTH_URL`.
+- Serve both over HTTPS in production.
+
+If sign-in appears to succeed but every subsequent request comes back `401`, the
+cookie isn't being kept — a mismatch between these three values is almost always
+why.
+
+## Secrets
+
+`BETTER_AUTH_SECRET` signs sessions and API keys.
+
+<Callout type="warning">
+  Rotating it invalidates every session **and** every issued API key at once —
+  every backend calling `send()` starts getting `401 Invalid API key`. Treat it
+  as fixed per environment, and rotate only as a planned exercise with new keys
+  ready to deploy.
+</Callout>
+
+Use a distinct secret and a distinct database per environment. A staging API key
+should be worthless against production.
+
+## Request size
+
+The API accepts JSON bodies up to **5 MB**. A saved template carries both the
+inlined HTML and the editor's full design document, which together get close to
+Express's 100 KB default — hence the raised limit.
+
+If you put a reverse proxy in front, raise its body limit to match, or template
+saves fail with a 413 that never reaches the application.
+
+## Database
+
+Postgres is the only datastore — templates, locales, users, sessions and API
+keys all live there. There's no cache, queue, or object store to run alongside
+it.
+
+Back it up like anything else you can't lose. A restore brings back every
+template and translation; nothing is kept outside the database.
+
+## Upgrading
+
+```bash
+git pull
+pnpm install --frozen-lockfile
+pnpm --filter @local-letter/api build
+pnpm --filter @local-letter/api exec prisma migrate deploy
+# restart the API, then redeploy the dashboard bundle
+```
+
+Rebuild and redeploy the dashboard whenever the API's surface changes — the two
+are versioned together in the same repo.
+
+## Scaling
+
+The API is stateless apart from Postgres, so run as many instances behind a load
+balancer as you like. Rendering is CPU-light string substitution and does no
+writes.
+
+Delivery is not part of this system: every email leaves through *your* Resend
+key from *your* backend, so throughput limits are Resend's, not Local Letter's.
+
+## Related
+
+- [Configuration](/getting-started/configuration) — every environment variable
+- [API keys](/concepts/api-keys) — what a key can reach, and what it can't

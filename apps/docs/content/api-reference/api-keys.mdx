@@ -1,0 +1,115 @@
+---
+title: API keys API
+description: Session-authenticated endpoints for listing, creating and revoking a project's Local Letter API keys.
+---
+
+import { Callout } from 'nextra/components'
+
+# API keys API
+
+Session-authenticated and scoped to a project. A key can never manage keys — 
+these are dashboard-only routes.
+
+## `GET /projects/:slug/api-keys`
+
+Lists a project's keys, newest first. Paginated with the standard
+[`page` / `limit`](/api-reference#pagination).
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "API keys fetched successfully",
+  "data": [
+    {
+      "id": "…",
+      "name": "Production backend",
+      "start": "ll_a1b2",
+      "prefix": null,
+      "enabled": true,
+      "lastRequest": "2026-01-14T09:20:11.000Z",
+      "createdAt": "2026-01-02T15:44:00.000Z"
+    }
+  ],
+  "meta": { "pagination": { "page": 1, "limit": 50, "total": 1, "totalPages": 1 } }
+}
+```
+
+The secret is **not** in this response and never will be. `start` holds the
+leading characters so you can tell keys apart; `lastRequest` is when the key was
+last used, which is how you find one nothing is calling any more.
+
+## `POST /projects/:slug/api-keys`
+
+```json
+{ "name": "Production backend" }
+```
+
+| Field | Type | Required | Notes |
+| ----- | ---- | -------- | ----- |
+| `name` | `string` | Yes | Non-empty. Trimmed. Label only — has no effect on what the key can do. |
+
+Returns `201`:
+
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "message": "API key created successfully",
+  "data": {
+    "id": "…",
+    "name": "Production backend",
+    "start": "ll_a1b2",
+    "prefix": null,
+    "enabled": true,
+    "createdAt": "2026-01-14T09:21:00.000Z",
+    "key": "the-actual-secret-value"
+  }
+}
+```
+
+<Callout type="warning">
+  `key` appears in **this response only**. It is not stored in retrievable form
+  and no endpoint returns it again. Copy it now; a lost key gets replaced, not
+  recovered.
+</Callout>
+
+The new key is bound to this project on creation, which is what lets
+`/v1/render` resolve template keys without being told the project.
+
+**Errors**
+
+| Status | Message |
+| ------ | ------- |
+| `400` | `name is required` |
+| `404` | `Project not found` |
+
+## `DELETE /projects/:slug/api-keys/:id`
+
+Revokes a key by deleting it.
+
+```json
+{ "success": true, "statusCode": 200, "message": "API key revoked successfully", "data": null }
+```
+
+Effective immediately — the next render with that key gets `401 Invalid API
+key`. To rotate without downtime: create the replacement, deploy it, then revoke
+the old one.
+
+**Errors**
+
+| Status | Message |
+| ------ | ------- |
+| `404` | `API key not found` — no such id **in this project**. |
+
+## Using a key
+
+Keys authenticate the `/v1` routes as a bearer token:
+
+```bash
+curl http://localhost:4000/v1/whoami \
+  -H "Authorization: Bearer $LOCAL_LETTER_API_KEY"
+```
+
+See [Render](/api-reference/render) for the endpoint they exist for, and
+[API keys](/concepts/api-keys) for scope and blast radius.

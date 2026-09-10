@@ -1,0 +1,94 @@
+---
+title: Projects API
+description: Session-authenticated endpoints for listing, reading and creating Local Letter projects.
+---
+
+import { Callout } from 'nextra/components'
+
+# Projects API
+
+Session-authenticated. These are the calls the dashboard makes; an API key
+cannot reach them.
+
+All responses use the [standard envelope](/api-reference#response-envelope).
+
+## `GET /projects`
+
+Lists the projects you own, newest first. Paginated.
+
+| Query | Default | Notes |
+| ----- | ------- | ----- |
+| `page` | `1` | 1-based. |
+| `limit` | `50` | Clamped to 100. |
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Projects fetched successfully",
+  "data": [
+    {
+      "id": "…",
+      "name": "Acme",
+      "slug": "acme",
+      "ownerId": "…",
+      "createdAt": "2026-01-14T09:21:00.000Z",
+      "updatedAt": "2026-01-14T09:21:00.000Z"
+    }
+  ],
+  "meta": { "pagination": { "page": 1, "limit": 50, "total": 1, "totalPages": 1 } }
+}
+```
+
+## `POST /projects`
+
+```json
+{ "name": "Acme", "slug": "acme" }
+```
+
+| Field | Type | Required | Notes |
+| ----- | ---- | -------- | ----- |
+| `name` | `string` | Yes | Non-empty. Trimmed before saving. |
+| `slug` | `string` | No | Must match `^[a-z0-9-]+$`. Derived from `name` when omitted. |
+
+Returns `201` with the created project.
+
+**Errors**
+
+| Status | Message |
+| ------ | ------- |
+| `400` | `name is required` |
+| `400` | `slug must match ^[a-z0-9-]+$` |
+| `409` | `slug already in use` |
+
+<Callout type="info">
+  Slugs are globally unique, not per-account — a slug another user has taken
+  returns `409`. Namespace yours if you expect collisions.
+</Callout>
+
+## `GET /projects/:slug`
+
+Returns one project you own.
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Project fetched successfully",
+  "data": { "id": "…", "name": "Acme", "slug": "acme", "ownerId": "…" }
+}
+```
+
+**Errors**
+
+| Status | Message |
+| ------ | ------- |
+| `404` | `Project not found` — no such slug, **or** it isn't yours. |
+
+## Not implemented
+
+There is no update or delete endpoint for projects, and no way to change a slug
+after creation. There's also no team model — a project has exactly one owner and
+isn't shared.
+
+See [Projects](/concepts/projects) for the concepts behind all this.

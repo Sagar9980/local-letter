@@ -1,0 +1,96 @@
+---
+title: Templates
+description: How a Local Letter template is modelled — a stable key, a default locale, and one row of subject and HTML per language.
+---
+
+import { Callout } from 'nextra/components'
+
+# Templates
+
+A template is a named email inside a project. It holds no copy itself — the
+copy lives in its **locales**, one per language, each with its own subject and
+HTML body.
+
+```
+Project "acme"
+└── Template  key: welcome-email   defaultLocale: en
+    ├── Locale en   subject: "Welcome aboard, {{first_name}}"   html: …
+    ├── Locale fr   subject: "Bienvenue, {{first_name}}"        html: …
+    └── Locale de   subject: "Willkommen, {{first_name}}"       html: …
+```
+
+That split is the whole idea: your code names `welcome-email` once and never
+changes, while copy, layout and translations move underneath it without a
+deploy.
+
+## The key
+
+The key is the template's contract with your code — it's the string you pass to
+`send()`. It must match `^[a-z0-9-]+$` and is unique within a project.
+
+If you create a template without a key, one is generated from the name the same
+way project slugs are: lowercased, non-alphanumeric runs collapsed to `-`. So
+"Welcome Email" becomes `welcome-email`.
+
+<Callout type="warning">
+  Keys are not editable after creation, and deleting a template deletes every
+  locale under it by cascade. Any `send()` still naming that key starts failing
+  with `404 Template not found` — which is why the dashboard asks you to type
+  the name before deleting.
+</Callout>
+
+## Locales
+
+Every template has a `defaultLocale`, set to `en` when it's created. That locale
+row is created alongside the template, initially empty.
+
+The default locale is the render fallback of last resort, so it can't be
+deleted while the template exists. Everything about matching and fallback is on
+the [Locales](/concepts/locales) page.
+
+## What a locale row stores
+
+| Field | Notes |
+| ----- | ----- |
+| `locale` | Normalised BCP-47 code — `en`, `en-US`, `zh-Hant`. |
+| `subject` | Subject line, with `{{tokens}}`. |
+| `htmlBody` | Rendered HTML, with `{{tokens}}`. This is what gets sent. |
+| `designJson` | The visual editor's own document. Not used at render time. |
+| `variablesSchema` | The tokens the template expects, recorded on library imports. |
+| `status` | `draft` or `published`. |
+
+`htmlBody` is the source of truth for rendering. `designJson` exists so the
+editor can reopen a template as components rather than re-parsing HTML — the
+render path never reads it.
+
+<Callout type="info">
+  **`status` is descriptive, not enforced.** The render endpoint serves whatever
+  locale matches, regardless of status. Treat it as a label for your own team's
+  workflow, not as a gate — a draft in a live project will go out if your code
+  asks for it.
+</Callout>
+
+## Editing
+
+Saving from the editor upserts the locale row: `PUT /projects/:slug/templates/:key`
+writes the default locale, `PUT /projects/:slug/templates/:key/locales/:locale`
+writes a specific one. Both require `subject` and `htmlBody` as strings — there
+is no partial save.
+
+## In the API
+
+```http
+GET    /projects/:slug/templates              # ?q= &status= &page= &limit=
+POST   /projects/:slug/templates              # { name, key? }
+GET    /projects/:slug/templates/:key
+PUT    /projects/:slug/templates/:key         # save default locale
+DELETE /projects/:slug/templates/:key
+POST   /projects/:slug/templates/import       # from the built-in library
+```
+
+Full request and response shapes: [API reference → Templates](/api-reference/templates).
+
+## Related
+
+- [Variables](/concepts/variables) — how `{{tokens}}` are substituted
+- [Template library](/concepts/template-library) — start from a ready-made pack

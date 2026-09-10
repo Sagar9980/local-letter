@@ -1,0 +1,158 @@
+---
+title: Library API
+description: Session-authenticated endpoints for browsing Local Letter's built-in template packs and importing them into a project.
+---
+
+import { Callout } from 'nextra/components'
+
+# Library API
+
+Read-only access to the built-in [template library](/concepts/template-library),
+plus the one write that copies a pack into a project.
+
+Session-authenticated. Packs are static data compiled into the API, so the read
+endpoints touch no database at all.
+
+## `GET /library/packs`
+
+Every pack, in dashboard order (broadest audience first).
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Template packs fetched successfully",
+  "data": [
+    {
+      "id": "saas-starter",
+      "name": "SaaS Starter Pack",
+      "tagline": "Signup to renewal, all sixteen",
+      "description": "…",
+      "audience": "SaaS & B2B software",
+      "templateCount": 16,
+      "colors": { "brand": "#…", "accent": "#…", "bg": "#…", "card": "#…", "text": "#…" },
+      "templates": [
+        {
+          "key": "welcome",
+          "name": "Welcome",
+          "description": "…",
+          "category": "onboarding",
+          "subject": "Welcome to {{product_name}}",
+          "preheader": "…",
+          "variables": ["product_name", "first_name"],
+          "html": ""
+        }
+      ]
+    }
+  ]
+}
+```
+
+<Callout type="info">
+  `html` is deliberately empty here. Rendered markup runs roughly 10kb per
+  template, and the pack browser only needs names and colour swatches — fetch a
+  single pack when you need the real thing.
+</Callout>
+
+## `GET /library/packs/:packId`
+
+One pack, with `html` populated for every template.
+
+```bash
+curl http://localhost:4000/library/packs/saas-starter
+```
+
+Same shape as above, minus the empty-HTML shortcut.
+
+**Errors:** `404 Template pack not found`.
+
+## `GET /library/packs/:packId/templates/:templateKey`
+
+A single library template, with its pack identified alongside it.
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Template fetched successfully",
+  "data": {
+    "pack": { "id": "saas-starter", "name": "SaaS Starter Pack" },
+    "key": "welcome",
+    "name": "Welcome",
+    "description": "…",
+    "category": "onboarding",
+    "subject": "Welcome to {{product_name}}",
+    "preheader": "…",
+    "variables": ["product_name", "first_name"],
+    "html": "<html>…</html>"
+  }
+}
+```
+
+`variables` is extracted from the subject and rendered HTML — it's the list of
+`{{tokens}}` this design actually uses, which is what you'll need to supply when
+sending.
+
+**Errors:** `404 Template pack not found`, `404 Template not found in this pack`.
+
+## Importing into a project
+
+### `POST /projects/:slug/templates/import`
+
+```json
+{
+  "packId": "saas-starter",
+  "templateKeys": ["welcome", "password-reset"],
+  "prefix": "acme"
+}
+```
+
+| Field | Type | Required | Notes |
+| ----- | ---- | -------- | ----- |
+| `packId` | `string` | Yes | Which pack to copy from. |
+| `templateKeys` | `string[]` | No | Import only these. Omit to import the whole pack. If present, must be non-empty. |
+| `prefix` | `string` | No | Namespaces every key as `<prefix>-<key>`. |
+
+Each template is created as a draft with a single `en` locale holding the pack's
+rendered subject and HTML, plus a `variablesSchema` describing its tokens. The
+whole batch runs in one transaction.
+
+Returns `201`:
+
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "message": "Imported 1 template",
+  "data": {
+    "packId": "saas-starter",
+    "packName": "SaaS Starter Pack",
+    "imported": [{ "id": "…", "key": "acme-welcome", "name": "Welcome" }],
+    "skipped": [
+      { "key": "acme-password-reset", "name": "Password Reset", "reason": "key already in use" }
+    ]
+  }
+}
+```
+
+<Callout type="warning">
+  **Nothing is ever overwritten.** A template whose key is already taken is
+  skipped and reported in `skipped` — the import doesn't fail, and your edits are
+  never replaced. Check `skipped`; a `201` does not mean everything landed.
+</Callout>
+
+**Errors**
+
+| Status | Message |
+| ------ | ------- |
+| `400` | `packId is required` |
+| `400` | `templateKeys must be a non-empty array of template keys` |
+| `400` | `Unknown template key "…" for this pack` |
+| `400` | `Resulting key "…" must match ^[a-z0-9-]+$` — usually a bad `prefix`. |
+| `404` | `Template pack not found` |
+| `404` | `Project not found` |
+
+## Related
+
+- [Template library](/concepts/template-library) — the packs and what's in them
+- [Templates API](/api-reference/templates) — what an imported template becomes

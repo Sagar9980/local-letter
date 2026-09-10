@@ -1,0 +1,192 @@
+---
+title: Templates API
+description: Session-authenticated endpoints for creating, reading, editing and deleting Local Letter templates and their locales.
+---
+
+import { Callout } from 'nextra/components'
+
+# Templates API
+
+Session-authenticated, all scoped under a project slug. An API key cannot reach
+these — it can only [render](/api-reference/render).
+
+Every route resolves the project by `(slug, ownerId)` first, so a project that
+isn't yours returns `404 Project not found`.
+
+## `GET /projects/:slug/templates`
+
+Lists a project's templates, most recently updated first.
+
+| Query | Notes |
+| ----- | ----- |
+| `q` | Case-insensitive substring match on the template **name**. |
+| `status` | Exact match on the default locale's status — `draft` or `published`. |
+| `page` / `limit` | Standard [pagination](/api-reference#pagination). |
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Templates fetched successfully",
+  "data": [
+    {
+      "id": "…",
+      "key": "welcome-email",
+      "name": "Welcome Email",
+      "defaultLocale": "en",
+      "locales": ["en", "de", "fr"],
+      "status": "draft",
+      "subject": "Welcome aboard, {{first_name}}",
+      "updatedAt": "2026-01-14T09:21:00.000Z",
+      "createdAt": "2026-01-10T11:02:00.000Z"
+    }
+  ],
+  "meta": { "pagination": { "page": 1, "limit": 50, "total": 1, "totalPages": 1 } }
+}
+```
+
+`locales` is ordered with the default locale first, then alphabetically.
+`status` and `subject` come from the default locale, not from any other
+translation.
+
+<Callout type="info">
+  `status` filtering happens after the rows are loaded, because status lives on
+  the locale rather than the template. Behaviour is identical; it just means the
+  filter isn't pushed into the database query.
+</Callout>
+
+## `POST /projects/:slug/templates`
+
+```json
+{ "name": "Welcome Email", "key": "welcome-email" }
+```
+
+| Field | Type | Required | Notes |
+| ----- | ---- | -------- | ----- |
+| `name` | `string` | Yes | Non-empty. Trimmed. |
+| `key` | `string` | No | Must match `^[a-z0-9-]+$`. Derived from `name` when omitted. |
+
+Creates the template plus an empty `en` locale, marked as the default. Returns
+`201`.
+
+**Errors**
+
+| Status | Message |
+| ------ | ------- |
+| `400` | `name is required` |
+| `400` | `key must match ^[a-z0-9-]+$` |
+| `409` | `key already in use` — within this project. |
+
+## `GET /projects/:slug/templates/:key`
+
+Returns the template with every locale in full — subject, `htmlBody`,
+`designJson`, `variablesSchema`, `status`. Locales are ordered default-first,
+then alphabetically.
+
+**Errors:** `404 Template not found`.
+
+## `PUT /projects/:slug/templates/:key`
+
+Saves the **default** locale.
+
+```json
+{
+  "subject": "Welcome aboard, {{first_name}}",
+  "htmlBody": "<html>…</html>",
+  "designJson": { }
+}
+```
+
+| Field | Type | Required | Notes |
+| ----- | ---- | -------- | ----- |
+| `subject` | `string` | Yes | |
+| `htmlBody` | `string` | Yes | What actually gets rendered and sent. |
+| `designJson` | `object` | No | The editor's own document. Never read at render time. |
+
+<Callout type="warning">
+  This is a full replace, not a patch — both `subject` and `htmlBody` must be
+  strings on every call, or you get `400 subject and htmlBody are required
+  strings`. Sending only `subject` would blank the body.
+</Callout>
+
+The write is an upsert: if the locale row somehow doesn't exist, it's created as
+a `draft`.
+
+## `PUT /projects/:slug/templates/:key/locales/:locale`
+
+Identical to the above, but targets a named locale instead of the default.
+
+```http
+PUT /projects/acme/templates/welcome-email/locales/fr
+```
+
+**Errors:** `400 locale must be a code like 'en' or 'en-US'`, `404 Template not found`.
+
+## `POST /projects/:slug/templates/:key/locales`
+
+Adds a translation slot.
+
+```json
+{ "locale": "fr", "copyFrom": "en" }
+```
+
+| Field | Type | Required | Notes |
+| ----- | ---- | -------- | ----- |
+| `locale` | `string` | Yes | Normalised before saving — `EN-us` becomes `en-US`. |
+| `copyFrom` | `string` | No | Seeds subject, body, design and variable schema from this sibling locale. |
+
+With `copyFrom`, translators start inside a working layout instead of a blank
+canvas. Without it, the locale starts empty. Either way it starts as `draft`.
+
+Returns `201` with the new locale row.
+
+**Errors**
+
+| Status | Message |
+| ------ | ------- |
+| `400` | `locale must be a code like 'en' or 'en-US'` |
+| `400` | `Cannot copy from <locale>: locale not found on this template` |
+| `409` | `locale already exists for this template` |
+
+## `DELETE /projects/:slug/templates/:key/locales/:locale`
+
+Removes one translation.
+
+```json
+{ "success": true, "statusCode": 200, "message": "Locale deleted successfully", "data": { "id": "…", "locale": "fr" } }
+```
+
+**Errors**
+
+| Status | Message |
+| ------ | ------- |
+| `400` | `Cannot delete the default locale` — it's the last link in every fallback chain. |
+| `404` | `Locale not found` |
+
+## `DELETE /projects/:slug/templates/:key`
+
+Deletes the template and, by cascade, every locale under it.
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Template deleted successfully",
+  "data": { "id": "…", "key": "welcome-email", "name": "Welcome Email", "localesDeleted": 3 }
+}
+```
+
+<Callout type="warning">
+  Irreversible and unrecoverable. Every `send()` still naming that key starts
+  returning `404 Template not found` immediately — which is why the dashboard
+  makes you type the name first.
+</Callout>
+
+## `POST /projects/:slug/templates/import`
+
+Bulk-creates templates from a built-in library pack. Documented under
+[Library](/api-reference/library#importing-into-a-project).
+
+## Related
+
+- [Templates](/concepts/templates) · [Locales & fallback](/concepts/locales)

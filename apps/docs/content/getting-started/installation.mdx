@@ -1,0 +1,119 @@
+---
+title: Installation
+description: Clone Local Letter, point it at a Postgres database, run the migrations, and start the API, dashboard and site locally.
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# Installation
+
+Local Letter is a pnpm + [Turborepo](https://turbo.build) monorepo. One install
+at the root gets you every app.
+
+## Requirements
+
+- **Node.js 20 or newer**
+- **pnpm 10.x** — `corepack enable` picks up the version pinned in the root
+  `package.json`
+- **A Postgres database** — local or hosted, anything Prisma can reach
+
+<Steps>
+
+### Clone and install
+
+```bash
+git clone https://github.com/Sagar9980/local-letter.git
+cd local-letter
+pnpm install
+```
+
+### Create your env files
+
+Each app reads its config from environment variables. Copy the example file for
+the apps you plan to run:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+cp apps/site/.env.example apps/site/.env   # optional — marketing site only
+```
+
+Then open `apps/api/.env` and fill in two values that have no sensible default:
+
+```bash filename="apps/api/.env"
+DATABASE_URL="postgresql://user:password@localhost:5432/local_letter"
+BETTER_AUTH_SECRET="replace-with-a-long-random-secret"
+```
+
+A good secret is any long random string:
+
+```bash
+openssl rand -base64 32
+```
+
+Every variable is listed on the [Configuration](/getting-started/configuration)
+page.
+
+### Apply the database schema
+
+```bash
+pnpm --filter @local-letter/api exec prisma migrate dev
+```
+
+This creates the tables for users, sessions, projects, templates, template
+locales and API keys.
+
+### Start everything
+
+```bash
+pnpm dev
+```
+
+Turborepo starts all three apps at once:
+
+| App | URL |
+| --- | --- |
+| API | `http://localhost:4000` |
+| Dashboard | `http://localhost:5173` |
+| Marketing site | `http://localhost:5174` |
+| Docs (this site) | `http://localhost:5175` |
+
+To run just one, filter by package name:
+
+```bash
+pnpm --filter @local-letter/web dev
+```
+
+### Check that the API is up
+
+```bash
+curl http://localhost:4000/health
+```
+
+```json
+{ "success": true, "statusCode": 200, "message": "Service is healthy", "data": { "status": "ok" } }
+```
+
+</Steps>
+
+<Callout type="info">
+  The dashboard talks to the API across origins, so `WEB_ORIGIN` in
+  `apps/api/.env` must match the URL the dashboard is served from. With the
+  defaults above they already line up.
+</Callout>
+
+## Other root scripts
+
+Every root script fans out across the workspace the same way `dev` does:
+
+```bash
+pnpm build      # build every app
+pnpm lint       # lint every app
+pnpm typecheck  # typecheck every app
+pnpm test       # run every test suite
+```
+
+## Next
+
+Create a project, design a template and send a real email in
+[Send your first email](/getting-started/first-email).

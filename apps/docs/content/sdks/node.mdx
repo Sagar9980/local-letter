@@ -1,0 +1,158 @@
+---
+title: Node SDK
+description: The local-letter npm package — render a Local Letter template and deliver it through Resend in a single typed call.
+---
+
+import { Callout } from 'nextra/components'
+
+# Node SDK
+
+`local-letter` on npm. Renders a template against your API, then hands the
+result to [Resend](https://resend.com) from your own process.
+
+```bash
+npm install local-letter
+```
+
+Ships its own TypeScript types — there's no `@types` package.
+
+## Quick start
+
+```ts
+import { TemplateClient } from 'local-letter'
+
+const letters = new TemplateClient({
+  baseUrl: 'https://letters.yourcompany.com',
+  apiKey: process.env.LOCAL_LETTER_API_KEY!,
+  resendApiKey: process.env.RESEND_API_KEY!,
+  from: 'hello@yourcompany.com',
+})
+
+const result = await letters.send({
+  template: 'welcome-email',
+  to: 'customer@example.com',
+  variables: { first_name: 'Sagar' },
+})
+
+console.log(result.id) // Resend message id
+```
+
+Build one client per process and reuse it — the constructor creates a Resend
+client, so a client per request is pure overhead.
+
+## Localisation
+
+Pass the recipient's locale and something to fall back to:
+
+```ts
+const result = await letters.send({
+  template: 'welcome-email',
+  to: user.email,
+  variables: { first_name: user.firstName },
+  locale: user.locale,      // "fr" — the French version, if it exists
+  fallbackLocale: 'en',     // otherwise English, then the template default
+})
+
+result.locale // what actually went out
+```
+
+Casing doesn't matter: `en-us` and `EN-US` both resolve to `en-US`. Full rules
+in [Locales & fallback](/concepts/locales).
+
+## `new TemplateClient(options)`
+
+```ts
+interface TemplateClientOptions {
+  baseUrl: string
+  apiKey: string
+  resendApiKey: string
+  from: string
+}
+```
+
+| Option | Type | Notes |
+| ------ | ---- | ----- |
+| `baseUrl` | `string` | Your Local Letter API, e.g. `https://letters.yourcompany.com`. No trailing slash. |
+| `apiKey` | `string` | Project API key, from the dashboard's API Keys page. |
+| `resendApiKey` | `string` | Passed to Resend only. Local Letter never receives it. |
+| `from` | `string` | Default sender for every `send()`. |
+
+## `letters.send(options)`
+
+```ts
+interface SendOptions {
+  template: string
+  to: string | string[]
+  variables?: Record<string, unknown>
+  locale?: string
+  fallbackLocale?: string
+  from?: string
+  replyTo?: string
+}
+```
+
+| Option | Type | Notes |
+| ------ | ---- | ----- |
+| `template` | `string` | Template key, e.g. `"welcome-email"`. |
+| `to` | `string \| string[]` | One or more recipients. |
+| `variables` | `Record<string, unknown>` | Values for the template's `{{tokens}}`. |
+| `locale` | `string` | Preferred locale. |
+| `fallbackLocale` | `string` | Used when `locale` has no translation. |
+| `from` | `string` | Overrides the client default, this send only. |
+| `replyTo` | `string` | Reply-to address. |
+
+Resolves to a `SendResult`:
+
+```ts
+interface SendResult {
+  id: string       // Resend message id
+  subject: string  // rendered subject
+  html: string     // rendered body
+  locale: string   // the locale that actually shipped
+}
+```
+
+## Errors
+
+Two error classes, so you can tell a template problem from a delivery problem:
+
+```ts
+import { TemplateRenderError, TemplateSendError } from 'local-letter'
+
+try {
+  await letters.send({ template: 'welcome-email', to: user.email })
+} catch (err) {
+  if (err instanceof TemplateRenderError) {
+    // Your API rejected the render. err.status:
+    //   401 bad key · 403 key not linked to a project · 404 no such template
+  } else if (err instanceof TemplateSendError) {
+    // Rendered fine, Resend refused it — often an unverified sender domain.
+    // err.cause holds Resend's own error object.
+  } else {
+    // Nothing reached the API — wrong baseUrl, or it isn't running.
+  }
+}
+```
+
+<Callout type="info">
+  A missing variable is not an error. An unmatched `{{token}}` is left in the
+  rendered output rather than blanked — see
+  [Variables](/concepts/variables#missing-variables-stay-visible).
+</Callout>
+
+## Under the hood
+
+`send()` is two calls:
+
+1. `POST {baseUrl}/v1/render/{template}` with `Authorization: Bearer {apiKey}`,
+   carrying `variables`, `locale` and `fallbackLocale`.
+2. `resend.emails.send(...)` with the rendered subject and HTML.
+
+Your Resend key never touches Local Letter, and Local Letter never sends mail.
+If you'd rather render and deliver separately, call
+[the render endpoint](/api-reference/render) yourself.
+
+## Example app
+
+A runnable Node service using the SDK end to end lives in
+[`examples/node`](https://github.com/Sagar9980/local-letter/tree/main/examples/node).
