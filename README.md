@@ -39,6 +39,7 @@ and fill it in for the apps you're running:
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
 cp apps/site/.env.example apps/site/.env   # optional, only needed for the marketing site
+cp apps/docs/.env.example apps/docs/.env   # optional, only needed for the docs site
 ```
 
 `apps/api/.env` needs a real `DATABASE_URL` and a random `BETTER_AUTH_SECRET`.

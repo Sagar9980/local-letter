@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { generateStaticParamsFor, importPage } from 'nextra/pages'
 import { useMDXComponents as getMDXComponents } from '../../mdx-components'
 
@@ -7,10 +8,22 @@ type PageProps = {
   params: Promise<{ mdxPath: string[] }>
 }
 
-export async function generateMetadata(props: PageProps) {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params
   const { metadata } = await importPage(params.mdxPath)
-  return metadata
+
+  // Next.js applies the layout's `openGraph.title` template to a page's
+  // `openGraph.title`, not to its `title` — so a page that only sets frontmatter
+  // `title` would unfurl under the site default everywhere. Carry the page's own
+  // title and description across so each link previews as itself.
+  const title = typeof metadata.title === 'string' ? metadata.title : undefined
+  const description = typeof metadata.description === 'string' ? metadata.description : undefined
+
+  return {
+    ...metadata,
+    openGraph: { ...metadata.openGraph, ...(title && { title }), ...(description && { description }) },
+    twitter: { ...metadata.twitter, ...(title && { title }), ...(description && { description }) },
+  }
 }
 
 const Wrapper = getMDXComponents().wrapper!

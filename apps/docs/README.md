@@ -51,13 +51,49 @@ from `nextra/components`; they are not globally available.
 
 ```
 app/
-  layout.tsx            navbar, theme, docsRepositoryBase
-  globals.css           the few theme overrides we make
+  layout.tsx            navbar, brand colours, metadata
+  globals.css           palette, fonts, the few theme overrides we make
+  opengraph-image.tsx   the 1200x630 social card, generated at build time
+  sitemap.ts            built from the same params the catch-all prerenders
+  robots.ts
+  site-url.ts           the public origin, shared by metadata/sitemap/robots
   [[...mdxPath]]/       catch-all that renders content/ through Nextra
+components/Logo.tsx     the mark and navbar wordmark
 content/                the docs themselves, one .mdx per page
+public/mark.svg         favicon, copied from apps/site
 mdx-components.tsx      merges the docs theme's MDX components
 next.config.mjs         the Nextra plugin
 ```
+
+## Branding
+
+The theme is Nextra's, wearing Local Letter's palette. Nothing is forked — the
+brand goes in through the theme's own hooks:
+
+| What | Where |
+| ---- | ----- |
+| Primary colour, page background | `<Head color backgroundColor>` in `app/layout.tsx` |
+| Geist / Geist Mono | `next/font` in `app/layout.tsx`, fed to `--x-font-*` in `globals.css` |
+| Navbar logo | `<Navbar logo>` with `components/Logo.tsx` |
+| Favicon | `metadata.icons` → `public/mark.svg` |
+
+Nextra derives its whole `primary-50…900` scale by shifting one lightness
+value, so the light theme runs a lower saturation than the dark one — otherwise
+the tint behind the active sidebar item comes out far louder than the rest of
+the page. Both themes clear 4.5:1 on links (5.2:1 light, 10.7:1 dark).
+
+## SEO
+
+Set `NEXT_PUBLIC_DOCS_URL` to the origin these docs are served from — canonical
+links, `og:url`, the social card, `sitemap.xml` and `robots.txt` are all built
+against it, and it defaults to `https://docs.localletter.dev`. See
+`.env.example`.
+
+Titles and descriptions come from each page's frontmatter. Next.js applies the
+layout's `openGraph.title` template to a page's `openGraph.title`, **not** to
+its `title` — so `app/[[...mdxPath]]/page.tsx` copies the page title and
+description across in `generateMetadata`. Without that, every page unfurls under
+the site default.
 
 ## Footer
 
