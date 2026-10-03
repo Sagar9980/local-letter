@@ -71,6 +71,8 @@ export type LibraryPackView = {
   templateCount: number;
   /** Enough of the theme for the browser to render a swatch and a mini preview. */
   colors: { brand: string; accent: string; bg: string; card: string; text: string };
+  /** How the pack's emails open, so the mini preview can mirror it. */
+  headerStyle: TemplatePack["theme"]["headerStyle"];
   templates: LibraryTemplateView[];
 };
 
@@ -110,6 +112,7 @@ export function toPackView(pack: TemplatePack, includeHtml = true): LibraryPackV
       card: pack.theme.card,
       text: pack.theme.text,
     },
+    headerStyle: pack.theme.headerStyle,
     templates: pack.templates.map((template) => {
       const view = renderLibraryTemplate(pack, template);
       return includeHtml ? view : { ...view, html: "" };

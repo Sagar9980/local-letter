@@ -20,6 +20,7 @@ export type LibraryPack = {
   audience: string
   templateCount: number
   colors: { brand: string; accent: string; bg: string; card: string; text: string }
+  headerStyle: "bar" | "minimal" | "centered"
   templates: LibraryTemplate[]
 }
 
