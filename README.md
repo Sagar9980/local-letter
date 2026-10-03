@@ -5,6 +5,8 @@ visual editor, translate it per locale, and render it from any codebase with
 one typed SDK call. Open source, self-hosted — your templates, your database,
 your infrastructure.
 
+![The Local Letter template editor, with the subject line, locale tabs and visual email canvas](.github/assets/template-editor.png)
+
 ## Monorepo layout
 
 | Path                          | What it is                                                              |
