@@ -1,5 +1,4 @@
 import Hero from '@/sections/Hero'
-import TrustStrip from '@/sections/TrustStrip'
 import Problem from '@/sections/Problem'
 import Features from '@/sections/Features'
 import HowItWorks from '@/sections/HowItWorks'
@@ -14,7 +13,6 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <TrustStrip />
       <Problem />
       <Features />
       <HowItWorks />

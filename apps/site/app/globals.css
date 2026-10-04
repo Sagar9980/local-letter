@@ -340,24 +340,8 @@
     display: none;
   }
 
-  .ll-fade-edges {
-    mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
-  }
-
   .ll-fade-bottom {
     mask-image: linear-gradient(180deg, black 55%, transparent);
-  }
-
-  @keyframes ll-marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-  .ll-marquee {
-    animation: ll-marquee 42s linear infinite;
   }
 
   @keyframes ll-drift {
